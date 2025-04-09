@@ -21,6 +21,9 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+#include "wifi_data.h"
+
+unsigned char USART2_DMA[1];
 
 #if 1
 #pragma import(__use_no_semihosting)
@@ -52,6 +55,8 @@ int fputc(int ch, FILE* f)
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+DMA_HandleTypeDef hdma_usart2_tx;
+DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USART1 init function */
 
@@ -107,7 +112,8 @@ void MX_USART2_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-
+	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE); //使能IDLE中断
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, USART2_DMA, sizeof(USART2_DMA));	// 使能DMA接收空闲中断
   /* USER CODE END USART2_Init 2 */
 
 }
@@ -189,6 +195,46 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+    /* USART2 DMA Init */
+    /* USART2_TX Init */
+    hdma_usart2_tx.Instance = DMA1_Stream6;
+    hdma_usart2_tx.Init.Channel = DMA_CHANNEL_4;
+    hdma_usart2_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_usart2_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_usart2_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_usart2_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_usart2_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_usart2_tx.Init.Mode = DMA_NORMAL;
+    hdma_usart2_tx.Init.Priority = DMA_PRIORITY_MEDIUM;
+    hdma_usart2_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_usart2_tx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart2_tx);
+
+    /* USART2_RX Init */
+    hdma_usart2_rx.Instance = DMA1_Stream5;
+    hdma_usart2_rx.Init.Channel = DMA_CHANNEL_4;
+    hdma_usart2_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_usart2_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_usart2_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_usart2_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_usart2_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_usart2_rx.Init.Mode = DMA_NORMAL;
+    hdma_usart2_rx.Init.Priority = DMA_PRIORITY_MEDIUM;
+    hdma_usart2_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_usart2_rx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart2_rx);
+
+    /* USART2 interrupt Init */
+    HAL_NVIC_SetPriority(USART2_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspInit 1 */
 
   /* USER CODE END USART2_MspInit 1 */
@@ -254,6 +300,12 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_5|GPIO_PIN_6);
 
+    /* USART2 DMA DeInit */
+    HAL_DMA_DeInit(uartHandle->hdmatx);
+    HAL_DMA_DeInit(uartHandle->hdmarx);
+
+    /* USART2 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspDeInit 1 */
 
   /* USER CODE END USART2_MspDeInit 1 */
@@ -279,5 +331,35 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-
+/// @brief usart dma idle 中断回调函数
+/// @param huart usart句柄
+/// @param Size dma 缓存区数据大小
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef* huart, unsigned short Size)
+{
+	osSemaphoreId_t atAck_Semap = get_atAck_semap();
+	osMemoryPoolId_t memPool = get_memoryPoolId_t();
+	AT_Ack_t* ack_data_block = get_Ack_t();
+	if (Size > USART2_REC_LEN)
+		CZ_WARN("usart data size overflow!\r\n");
+	if (huart->Instance == USART2) {
+		if (osOK == osSemaphoreAcquire(atAck_Semap, 0)) {	// 非阻塞式获取信号量
+			if (!ack_data_block->ack_data)
+				ack_data_block->ack_data = osMemoryPoolAlloc(memPool, 0);	// 非阻塞式申请内存块
+			if (!ack_data_block->ack_data) {
+				CZ_ERR("usart data block alloc failed!\r\n");
+				goto EXIT;
+			}
+			HAL_UARTEx_ReceiveToIdle_DMA(&huart2, ack_data_block->ack_data, USART2_REC_LEN - 1);	// 防止数据大于等于USART2_REC_LEN，导致strlen计算溢出，故最后一位不采保持0
+			ack_data_block->ack_data_len = strlen((const char*)ack_data_block->ack_data);
+			if (ack_data_block->ack_data_len >= USART2_REC_LEN - 1) {
+				CZ_WARN("data maybe distrust\r\n");
+			}
+			// CZ_DBG("usart data get\r\n");
+		} else {
+			CZ_WARN("usart data missing!\r\n");
+		}
+	}
+EXIT:
+	osSemaphoreRelease(atAck_Semap);
+}
 /* USER CODE END 1 */

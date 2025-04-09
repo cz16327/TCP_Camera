@@ -21,6 +21,7 @@
 #include "cmsis_os.h"
 #include "adc.h"
 #include "can.h"
+#include "dma.h"
 #include "fatfs.h"
 #include "i2c.h"
 #include "iwdg.h"
@@ -37,6 +38,7 @@
 #ifdef CM_BACKTRACE
 #include "cm_backtrace.h"
 #endif
+#include "cz_sysInfo.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,6 +103,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_IWDG_Init();
   MX_SDIO_SD_Init();
   MX_SPI1_Init();

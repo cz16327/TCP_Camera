@@ -3,12 +3,6 @@
 
 #include "main.h"
 
-typedef enum Able_def
-{
-	CZ_DISABLE,
-	CZ_ENABLE
-} Able_e;
-
 #pragma pack(1)
 typedef struct SysInfo_def
 {

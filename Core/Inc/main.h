@@ -31,16 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
-#include "string.h"
-#include "stdbool.h"
-#include "stddef.h"
-#include "stdint.h"
-#include "stdlib.h"
-#include "ctype.h"
-
-#include "cz_log.h"
-#include "cz_sysInfo.h"
+#include "public.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

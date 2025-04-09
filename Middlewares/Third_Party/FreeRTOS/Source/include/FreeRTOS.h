@@ -1157,11 +1157,6 @@ typedef struct xSTATIC_TCB
 	#if ( configUSE_POSIX_ERRNO == 1 )
 		int				iDummy22;
 	#endif
-#ifdef CM_BACKTRACE
-	#if(portSTACK_GROWTH <= 0)
-		UBaseType_t     uxSizeOfStack;      /*< Support For CmBacktrace >*/
-	#endif /* ( portSTACK_GROWTH > 0 )*/
-#endif
 } StaticTask_t;
 
 /*

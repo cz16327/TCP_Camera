@@ -33,7 +33,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+// 定义内存池对象
+osMemoryPoolId_t memoryPoolId;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -43,15 +44,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-void dump_task_info(void)
-{
-	static char InfoBuffer[512] = {0};
-	vPortEnterCritical();
-	vTaskList((char *) &InfoBuffer);
-	CZ_RAW("task          state  priority  stack   NO.\r\n");
-	CZ_RAW("\r\n%s\r\n", InfoBuffer);
-	vPortExitCritical();
-}
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -65,10 +58,51 @@ const osThreadAttr_t startTask_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for atAck_semaphores */
+osSemaphoreId_t atAck_semaphoresHandle;
+const osSemaphoreAttr_t atAck_semaphores_attributes = {
+  .name = "atAck_semaphores"
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+/// @brief 打印任务信息
+/// @param  void
+void dump_task_info(void)
+{
+	static char InfoBuffer[512] = {0};
+	vPortEnterCritical();
+	vTaskList((char *) &InfoBuffer);
+	CZ_RAW("task          state  priority  stack   NO.\r\n");
+	CZ_RAW("\r\n%s\r\n", InfoBuffer);
+	vPortExitCritical();
+}
 
+
+osSemaphoreId_t get_atAck_semap(void)
+{
+	return atAck_semaphoresHandle;
+}
+
+
+osMemoryPoolId_t get_memoryPoolId_t(void)
+{
+	return memoryPoolId;
+}
+
+
+/// @brief 初始化内存池
+/// @brief void
+/// @param  void
+void memoryPool_init(void)
+{
+	// 创建内存池
+	memoryPoolId = osMemoryPoolNew(NUM_MEMORY_BLOCKS, MEMORY_BLOCK_SIZE, NULL);
+	if (memoryPoolId == NULL) {
+		CZ_ERR("Failed to create memory pool\n");
+		NVIC_SystemReset();
+	}
+}
 /* USER CODE END FunctionPrototypes */
 
 void StartTask(void *argument);
@@ -101,6 +135,10 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
 		/* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of atAck_semaphores */
+  atAck_semaphoresHandle = osSemaphoreNew(1, 1, &atAck_semaphores_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 		/* add semaphores, ... */
@@ -138,17 +176,16 @@ void MX_FREERTOS_Init(void) {
 void StartTask(void *argument)
 {
   /* USER CODE BEGIN StartTask */
+	memoryPool_init();
 	cz_log_set_level(LOG_LEVEL_DBG);
 	dump_task_info();
 	tim_vbat_adc_enable(CZ_ENABLE);
 	WIFI_EN;
 	WIFI_PWRON;
-	extern UART_HandleTypeDef huart2;
 	/* Infinite loop */
 	for (;;) {
 		IWDG_Feed();
 		// LED_TOGGLE;
-		HAL_UART_Transmit(&huart2, "AT+RST\r\n", 9, 0xFFFF);
 		osDelay(2000);
 	}
   /* USER CODE END StartTask */
