@@ -1,0 +1,127 @@
+[*]
+
+# https://learn.microsoft.com/zh-cn/visualstudio/ide/cpp-editorconfig-properties?view=vs-2022
+
+############################## 缩进相关规则 ##################################
+# 大括号不会进行额外缩进。例如，类、函数或者代码块的起始大括号 { 会和上一行代码保持相同的缩进。
+cpp_indent_braces=false
+# 当存在多行表达式时，会依据最内层括号来确定缩进。也就是新的行相对于最内层括号进行缩进。
+cpp_indent_multi_line_relative_to=innermost_parenthesis
+# 在括号内的内容会进行缩进。像函数参数列表、表达式括号里的内容等，每行都会相对括号起始位置进行缩进。
+cpp_indent_within_parentheses=indent
+# 这意味着不会保留括号内原有的缩进。格式化时，括号内内容会依据规则重新缩进。
+cpp_indent_preserve_within_parentheses=false
+# case 标签会进行缩进，会和 switch 语句保持相同的缩进。
+cpp_indent_case_labels=true
+# case 标签下的代码内容会进行缩进
+cpp_indent_case_contents=true
+# 即便 case 标签下的代码形成了一个代码块，也不会额外增加缩进。
+cpp_indent_case_contents_when_block=false
+# 当 lambda 表达式带有参数时，其大括号会进行缩进。
+cpp_indent_lambda_braces_when_parameter=true
+# goto 标签会向左缩进一个单位。
+cpp_indent_goto_labels=one_left
+# 预处理指令（如 #include、#define 等）会置于最左侧列，不进行缩进。
+cpp_indent_preprocessor=leftmost_column
+# 访问修饰符（如 public、private、protected）不会进行缩进。
+cpp_indent_access_specifiers=false
+# 命名空间内的内容会进行缩进。
+cpp_indent_namespace_contents=true
+# 格式化时不会保留注释原有的缩进，注释会依据规则重新缩进。
+cpp_indent_preserve_comments=false
+
+############################## 换行相关规则 ##################################
+# 对于命名空间的起始大括号 {，是否换行不做强制要求，由原代码格式决定。
+cpp_new_line_before_open_brace_namespace=ignore
+# 类、结构体等类型定义的起始大括号 {，移动到新行。
+cpp_new_line_before_open_brace_type=new_line
+# 函数定义的起始大括号 {，移动到新行。
+cpp_new_line_before_open_brace_function=new_line
+# 普通代码块的起始大括号 {，保持在同一行上，但在前面添加一个空格。
+cpp_new_line_before_open_brace_block=same_line
+# lambda 表达式的起始大括号 {，是否换行不做强制要求。
+cpp_new_line_before_open_brace_lambda=ignore
+# 作用域大括号不会强制换行到单独的行。
+cpp_new_line_scope_braces_on_separate_lines=false
+# 空类型定义（如空类、空结构体）的结束大括号 } 移动到 { 所在的同一行。
+cpp_new_line_close_brace_same_line_empty_type=true
+# 空函数的结束大括号 } 不会和上一行代码放在同一行。
+cpp_new_line_close_brace_same_line_empty_function=false
+# catch 关键字前会强制换行。
+cpp_new_line_before_catch=true
+# else 关键字前不会强制换行。
+cpp_new_line_before_else=false
+# do-while 语句中的 while 关键字前不会强制换行。
+cpp_new_line_before_while_in_do_while=false
+
+############################## 空格相关规则 ##################################
+# 函数名和其参数列表的左括号之间的空格会被移除。
+cpp_space_before_function_open_parenthesis=remove
+# 函数参数列表括号内不会添加额外空格。
+cpp_space_within_parameter_list_parentheses=false
+# 空参数列表的括号之间不会添加空格。
+cpp_space_between_empty_parameter_list_parentheses=false
+# 控制流语句（如 if、for、while 等）的关键字后面会添加一个空格。
+cpp_space_after_keywords_in_control_flow_statements=true
+# 控制流语句括号内不会添加额外空格。
+cpp_space_within_control_flow_statement_parentheses=false
+# lambda 表达式参数列表的左括号前不会添加空格。
+cpp_space_before_lambda_open_parenthesis=false
+# 类型转换括号内不会添加额外空格。
+cpp_space_within_cast_parentheses=false
+# 类型转换右括号后不会添加额外空格。
+cpp_space_after_cast_close_parenthesis=false
+# 表达式括号内不会添加额外空格。
+cpp_space_within_expression_parentheses=false
+# 代码块起始大括号 { 前会添加一个空格。
+cpp_space_before_block_open_brace=true
+# 空大括号之间不会添加空格。
+cpp_space_between_empty_braces=false
+# 初始化列表起始大括号 { 前不会添加空格。
+cpp_space_before_initializer_list_open_brace=false
+# 初始化列表大括号内会添加空格。
+cpp_space_within_initializer_list_braces=true
+# 会保留初始化列表内原有的空格。
+cpp_space_preserve_in_initializer_list=true
+# 方括号 [ 前不会添加空格。
+cpp_space_before_open_square_bracket=false
+# 方括号内不会添加额外空格。
+cpp_space_within_square_brackets=false
+# 空方括号前不会添加空格。
+cpp_space_before_empty_square_brackets=false
+# 空方括号之间不会添加空格。
+cpp_space_between_empty_square_brackets=false
+# 连续的方括号会被视为一组，不会添加额外空格。
+cpp_space_group_square_brackets=true
+# lambda 表达式捕获列表的括号内不会添加额外空格。
+cpp_space_within_lambda_brackets=false
+# 空 lambda 捕获列表括号之间不会添加空格。
+cpp_space_between_empty_lambda_brackets=false
+# 逗号前不会添加空格。
+cpp_space_before_comma=false
+# 逗号后会添加一个空格。
+cpp_space_after_comma=true
+# 成员运算符（如 . 和 ->）周围的空格会被移除。
+cpp_space_remove_around_member_operators=true
+# 继承冒号 : 前会添加一个空格。
+cpp_space_before_inheritance_colon=true
+# 构造函数初始化列表冒号 : 前会添加一个空格。
+cpp_space_before_constructor_colon=true
+# 分号前的空格会被移除。
+cpp_space_remove_before_semicolon=true
+# 分号后不会添加额外空格。
+cpp_space_after_semicolon=false
+# 一元运算符（如 ++、--、! 等）周围的空格会被移除。
+cpp_space_remove_around_unary_operator=true
+# 二元运算符（如 +、-、* 等）周围会插入空格。
+cpp_space_around_binary_operator=insert
+# 赋值运算符（如 =、+= 等）周围会插入空格。
+cpp_space_around_assignment_operator=insert
+# 指针和引用符号（* 和 &）会靠左对齐。
+cpp_space_pointer_reference_alignment=left
+# 三元运算符 ? : 周围会插入空格。
+cpp_space_around_ternary_operator=insert
+
+############################## 换行保留规则 ##################################
+# 只有单行的代码块会保留原有的换行格式，多行代码块会依据规则进行格式化。
+cpp_wrap_preserve_blocks=one_liners
