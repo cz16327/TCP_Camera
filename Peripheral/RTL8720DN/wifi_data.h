@@ -6,10 +6,19 @@
 #pragma pack(1)
 typedef struct Expect_def
 {
-	const char *ack_OK;				// "OK"
-	const char *ack_ERROR;			// "ERROR"
-	const char *ack_sysMsg;			// "+SYSMSG:"
-	const char *ack_;
+	const char* ack_OK;						// "OK"
+	const char* ack_ERROR;					// "ERROR"
+	const char* ack_sysMsg;					// "+SYSMSG:"
+	const char* ack_atVer;					// "at version:"
+	const char* ack_sdkVer;					// "sdk version:"
+	const char* ack_firmwareVer;			// "firmware version:"
+	const char* ack_flashManufacturerID;	// "Flash Manufacturer ID:"
+	const char* ack_flashDeviceID;			// "Flash Device ID:"
+	const char* ack_flashSize;				// "Flash Capacity ID:"
+	const char* ack_uartCfg;				// "+UARTCFG:"
+	const char* ack_uartFlowCfg;			// "+UARTFLOWCONTROL:"
+	const char* ack_ota;					// "+OTA:"
+	const char* ack_tickless;				// "+TICKLESS:"
 } Expect_t;
 
 typedef struct Basic_AT_ACK_def

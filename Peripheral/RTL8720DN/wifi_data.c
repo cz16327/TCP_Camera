@@ -35,5 +35,15 @@ EXIT:
 static AT_Ack_t g_Ack_t = {
 	.expect.ack_OK = "OK",
 	.expect.ack_ERROR = "ERROR",
-	.expect.ack_sysMsg = "",
+	.expect.ack_sysMsg = "+SYSMSG:",
+	.expect.ack_atVer = "at version:",
+	.expect.ack_sdkVer = "sdk version:",
+	.expect.ack_firmwareVer = "firmware version:",
+	.expect.ack_flashManufacturerID = "Flash Manufacturer ID:",
+	.expect.ack_flashDeviceID = "Flash Device ID:",
+	.expect.ack_flashSize = "Flash Capacity ID:",
+	.expect.ack_uartCfg = "+UARTCFG:",
+	.expect.ack_uartFlowCfg = "+UARTFLOWCONTROL:",
+	.expect.ack_ota = "+OTA:",
+	.expect.ack_tickless = "+TICKLESS:",
 };

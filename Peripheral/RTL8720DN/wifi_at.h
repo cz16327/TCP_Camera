@@ -7,31 +7,140 @@
 #define WAIT_MS	(1000)
 
 /***** 执行方式枚举体 *****/
-typedef enum at_type_def
+typedef enum At_type_def
 {
-	Query = 1,	// 查询
-	Set,		// 设置
-	Excution	// 执行（部分指令为，显示可输入参数）
-} at_type_e;
+	Query = 1,	// 查询 "AT?"
+	Set,		// 设置 "AT="
+	Excution	// 执行 "AT"
+} At_type_e;
+
+/** 指定需要设置掩码的模式 **/
+typedef enum SysMsg_mode_def
+{
+	SeriaNet = 1,	// 透传模式
+} SysMsg_mode_e;
+
+/******** 打印掩码 ********/
+#define MASK_ALL 0xFFFFFFFF // 全部打印（枚举体默认int塞不下）
+typedef enum Mask_def
+{
+	EVENT_WIFI_DISCONNECT = 0x00000001,
+	EVENT_WIFI_CONNECT = 0x00000002,
+	EVENT_WIFI_APCLIENTDISCONNECT_MAC = 0x00000004,
+	EVENT_WIFI_APCLIENTCONNECTED_MAC = 0x00000008,
+	EVENT_SOCKETDOWN_CONID_LENGTH_DATA = 0x00000010,
+	EVENT_SOCKETSEED_SEEDCONID_SERVERCONID = 0x00000020,
+	EVENT_SOCKETDISSCONNECT_CONID = 0x00000040,
+	EVENT_SOCKETRECONNECT_CONID = 0x00000080,
+	EVENT_SOCKETAUTODEL_CONID = 0x00000100,
+	EVENT_MQTT_CONNECT = 0x00000200,
+	EVENT_MQTT_DISCONNECT = 0x00000400,
+	EVENT_MQTT_SUB_TOPIC_LEN_DATA = 0x00000800,
+	EVENT_BLE_DISCONNECT = 0x00001000,
+	EVENT_BLE_CONNECTED = 0x00002000,
+	DATA_LEN_DATA = 0x00004000,
+	EVENT_WIFI_GOT_IP = 0x00008000,
+	EVENT_WIFI_SCAN_DON = 0x00010000,
+} Mask_e;
+
+/******** 是否保存 ********/
+typedef enum Save_def
+{
+	UNSAVE,	// 不保存
+	SAVE	// 保存
+} Save_e;
+
+/****** 设置睡眠模式 ******/
+typedef enum Sleep_mode_def
+{
+	UNAUTO_LIGHT_SLEEP,	// 进入浅睡眠，上电不自动进入浅睡眠状态
+	AUTO_LIGHT_SLEEP,	// 进入浅睡眠，上电自动进入浅睡眠
+	DEEP_SLEEP,			// 进入深度睡眠状态
+	NORMAL				// 普通模式
+} Sleep_mode_e;
+
+/* 设置唤醒源(仅 Sleep_mode_e = 0/1/2 时有效) */
+typedef enum Wakeup_source_def
+{
+	TIMER_WAKEUP,	// 定时器唤醒
+	GPIO_WAKEUP		// GPIO 唤醒
+} Wakeup_source_e;
+
+/*** GPIO 唤醒时的唤醒电平 ***/
+typedef enum GPIO_wake_level_def
+{
+	LOW,		// 低电平唤醒
+	HIGH,		// 高电平唤醒
+	FALLING,	// 下降沿唤醒
+	RISING,		// 上升沿唤醒
+	DOUBLE		// 双边沿唤醒
+} GPIO_wake_level_e;
+
+/********* 数据位数 *********/
+typedef enum Uart_databits_def
+{
+	DATABITS_5 = 5,	// 5 bit 数据位
+	DATABITS_6 = 6,	// 6 bit 数据位
+	DATABITS_7 = 7,	// 7 bit 数据位
+	DATABITS_8 = 8	// 8 bit 数据位
+} Uart_databits_e;
+
+/********** 停止位 **********/
+typedef enum Uart_stopbits_def
+{
+	STOPBITS_1 = 1,		// 1 bit 停止位
+	STOPBITS_1_5 = 2,	// 1.5 bit 停止位
+	STOPBITS_2 = 3		// 2 bit 停止位
+} Uart_stopbits_e;
+
+/********* 奇偶校验 *********/
+typedef enum Uart_parity_def
+{
+	PARITY_NONE = 0,	// 无校验
+	PARITY_ODD = 1,		// 奇校验
+	PARITY_EVEN = 2	// 偶校验
+} Uart_parity_e;
+
+/*********** 流控 ***********/
+typedef enum Uart_flow_def
+{
+	FLOW_NONE = 0,		// 无流控
+	RTS_ENABLE = 1,		// 使能 RTS
+	CTS_ENABLE = 2,		// 使能 CTS
+	RTS_CTS_ENABLE = 3	// 同时使能 RTS 和 CTS
+} Uart_flow_e;
+
+/********* 下载模式 *********/
+typedef enum Download_mode_def
+{
+	UART_MODE = 1,	// 串口下载模式
+} Download_mode_e;
+
+/******* OTA下载方式 *******/
+typedef enum OTA_mode_def
+{
+	HTTP = 1,
+	HTTPS = 2,
+} OTA_mode_e;
 
 #pragma pack(1)
 typedef struct Basic_AT_def
 {
-	Ret_Status_e(*at)(void);
-	Ret_Status_e(*at_help)(void);
-	Ret_Status_e(*at_rst)(void);
-	Ret_Status_e(*at_restore)(void);
-	Ret_Status_e(*ate1)(void);
-	Ret_Status_e(*ate0)(void);
-	Ret_Status_e(*at_sysMsg)(void);
-	Ret_Status_e(*at_gmr)(at_type_e type, unsigned int timeoutS);
-	Ret_Status_e(*at_flashId)(void);
-	Ret_Status_e(*at_sleep)(void);
-	Ret_Status_e(*at_uartCfg)(void);
-	Ret_Status_e(*at_uartFlowCon)(void);
-	Ret_Status_e(*at_setDownload)(void);
-	Ret_Status_e(*at_ota)(void);
-	Ret_Status_e(*at_tickless)(void);
+	Ret_Status_e(*at)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_help)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_rst)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_restore)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*ate1)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*ate0)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_sysMsg)(At_type_e type, SysMsg_mode_e mode, Mask_e mask, Save_e saveFlash, unsigned int timeoutS);
+	Ret_Status_e(*at_gmr)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_flashId)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_sleep)(At_type_e type, Sleep_mode_e mode, Wakeup_source_e wake, unsigned int ms_pin, GPIO_wake_level_e level, unsigned int timeoutS);
+	Ret_Status_e(*at_uartCfg)(At_type_e type, unsigned int baudrate, Uart_databits_e databits, Uart_stopbits_e stopbits, Uart_parity_e parity, unsigned int timeoutS);
+	Ret_Status_e(*at_uartFlowControl)(At_type_e type, Uart_flow_e flowcontrol, unsigned int timeoutS);
+	Ret_Status_e(*at_setDownloadMode)(At_type_e type, Download_mode_e mode, unsigned int timeoutS);
+	Ret_Status_e(*at_ota)(At_type_e type, OTA_mode_e mode, unsigned char *Host_name, unsigned short Port, unsigned char *Route, unsigned int timeoutS);
+	Ret_Status_e(*at_tickless)(At_type_e type, unsigned char tickless, unsigned int timeoutS);
 } Basic_AT_t;
 
 typedef struct IOctrl_AT_def
