@@ -80,48 +80,87 @@ typedef enum GPIO_wake_level_def
 typedef enum Uart_databits_def
 {
 	DATABITS_5 = 5,	// 5 bit 数据位
-	DATABITS_6 = 6,	// 6 bit 数据位
-	DATABITS_7 = 7,	// 7 bit 数据位
-	DATABITS_8 = 8	// 8 bit 数据位
+	DATABITS_6,		// 6 bit 数据位
+	DATABITS_7,		// 7 bit 数据位
+	DATABITS_8		// 8 bit 数据位
 } Uart_databits_e;
 
 /********** 停止位 **********/
 typedef enum Uart_stopbits_def
 {
-	STOPBITS_1 = 1,		// 1 bit 停止位
-	STOPBITS_1_5 = 2,	// 1.5 bit 停止位
-	STOPBITS_2 = 3		// 2 bit 停止位
+	STOPBITS_1 = 1,	// 1 bit 停止位
+	STOPBITS_1_5,	// 1.5 bit 停止位
+	STOPBITS_2		// 2 bit 停止位
 } Uart_stopbits_e;
 
 /********* 奇偶校验 *********/
 typedef enum Uart_parity_def
 {
-	PARITY_NONE = 0,	// 无校验
-	PARITY_ODD = 1,		// 奇校验
-	PARITY_EVEN = 2	// 偶校验
+	PARITY_NONE,	// 无校验
+	PARITY_ODD,		// 奇校验
+	PARITY_EVEN		// 偶校验
 } Uart_parity_e;
 
 /*********** 流控 ***********/
 typedef enum Uart_flow_def
 {
-	FLOW_NONE = 0,		// 无流控
-	RTS_ENABLE = 1,		// 使能 RTS
-	CTS_ENABLE = 2,		// 使能 CTS
-	RTS_CTS_ENABLE = 3	// 同时使能 RTS 和 CTS
+	FLOW_NONE,		// 无流控
+	RTS_ENABLE,		// 使能 RTS
+	CTS_ENABLE,		// 使能 CTS
+	RTS_CTS_ENABLE	// 同时使能 RTS 和 CTS
 } Uart_flow_e;
 
 /********* 下载模式 *********/
 typedef enum Download_mode_def
 {
-	UART_MODE = 1,	// 串口下载模式
+	UART_MODE = 1	// 串口下载模式
 } Download_mode_e;
 
 /******* OTA下载方式 *******/
 typedef enum OTA_mode_def
 {
 	HTTP = 1,
-	HTTPS = 2,
+	HTTPS = 2
 } OTA_mode_e;
+
+/********* IO 电平 *********/
+typedef enum IO_level_def
+{
+	IO_RESET,	// 低电平
+	IO_SET		// 高电平
+} IO_level_e;
+
+/****** WIFI 工作模式 ******/
+typedef enum Wifi_mode_def
+{
+	UNINIT_MODE,	// 未初始化或者关闭 wifi
+	STA_MODE,		// STA 模式
+	AP_MODE,		// AP 模式
+	AP_STA_MODE		// AP+STA 模式
+} Wifi_mode_e;
+
+/******* IP 获取模式 *******/
+typedef enum IP_mode_def
+{
+	STATIC,	// 静态 IP
+	DYNAMIC	// 动态 IP
+} IP_mode_e;
+
+/******* EAP 加密方式 *******/
+typedef enum EAP_type_def
+{
+	PEAP = 1,	// PEAP 加密方式
+	TLS,		// TLS 加密方式
+	TTLS,		// TTLS 加密方式
+	FAST		// FAST 加密方式
+} EAP_type_e;
+
+/********** 使失能 **********/
+typedef enum BW_enable_def
+{
+	BW_DISABLE,
+	BW_ENABLE
+} BW_enable_e;
 
 #pragma pack(1)
 typedef struct Basic_AT_def
@@ -145,29 +184,28 @@ typedef struct Basic_AT_def
 
 typedef struct IOctrl_AT_def
 {
-	// AT+SYSIOMAP=16,21,34,NC,23,NC,26,29,NC,NC,30,NC,22,27,20,NC,NC
-	Ret_Status_e(*at_sysIoMap)(void);
-	Ret_Status_e(*at_sysGpioWrite)(void);
-	Ret_Status_e(*at_sysGpioRead)(void);
-	Ret_Status_e(*at_pwmCfg)(void);
-	Ret_Status_e(*at_pwmCfgs)(void);
-	Ret_Status_e(*at_pwmStop)(void);
-	Ret_Status_e(*at_pwmDutySet)(void);
-	Ret_Status_e(*at_pwmDutySets)(void);
+	Ret_Status_e(*at_sysIoMap)(At_type_e type, unsigned char PinNumber, unsigned char *pinx_list, unsigned int timeoutS);
+	Ret_Status_e(*at_sysGpioWrite)(At_type_e type, unsigned char pin, IO_level_e level, unsigned int timeoutS);
+	Ret_Status_e(*at_sysGpioRead)(At_type_e type, unsigned char pin, unsigned int timeoutS);
+	Ret_Status_e(*at_pwmCfg)(At_type_e type, unsigned char pin, unsigned int cycle, unsigned int duty, unsigned int timeoutS);
+	Ret_Status_e(*at_pwmCfgs)(At_type_e type, unsigned char pin, unsigned int cycle, unsigned int duty, unsigned int timeoutS);
+	Ret_Status_e(*at_pwmStop)(At_type_e type, unsigned char pin, unsigned int timeoutS);
+	Ret_Status_e(*at_pwmDutySet)(At_type_e type, unsigned char pin, unsigned int duty, unsigned int timeoutS);
+	Ret_Status_e(*at_pwmDutySets)(At_type_e type, unsigned char pin, unsigned int duty, unsigned int timeoutS);
 } IOctrl_AT_t;
 
 typedef struct Wifi_Basic_def
 {
-	Ret_Status_e(*at_wMode)(void);
-	Ret_Status_e(*at_wDisconnect)(void);
-	Ret_Status_e(*at_wScan)(void);
-	Ret_Status_e(*at_wScanActive)(void);
-	Ret_Status_e(*at_wSDhcp)(void);
-	Ret_Status_e(*at_wJap)(void);
-	Ret_Status_e(*at_staInfo)(void);
-	Ret_Status_e(*at_wJeap)(void);
-	Ret_Status_e(*at_wAutoConn)(void);
-	Ret_Status_e(*at_wApDhcp)(void);
+	Ret_Status_e(*at_wMode)(At_type_e type, Wifi_mode_e mode, Save_e saveFlash, unsigned int timeoutS);
+	Ret_Status_e(*at_wDisconnect)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_wScan)(At_type_e type, unsigned char* ssid, unsigned char* mac, unsigned char channel, char rssi, unsigned int timeoutS);
+	Ret_Status_e(*at_wScanActive)(At_type_e type, unsigned char* ssid, unsigned int timeoutS);
+	Ret_Status_e(*at_wSDhcp)(At_type_e type, IP_mode_e mode, unsigned char* ip, unsigned char* mask, unsigned char* gateway, unsigned int timeoutS);
+	Ret_Status_e(*at_wJap)(At_type_e type, unsigned char* ssid, unsigned char* pwd, unsigned char* bssid, unsigned int timeoutS);
+	Ret_Status_e(*at_staInfo)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_wJeap)(At_type_e type, EAP_type_e EAPtype, unsigned char* ssid, unsigned char* identity, unsigned char* pwd, unsigned int timeoutS);
+	Ret_Status_e(*at_wAutoConn)(At_type_e type, BW_enable_e enable, unsigned char* ssid, unsigned char* pwd, unsigned char* bssid, unsigned int timeoutS);
+	Ret_Status_e(*at_wApDhcp)(At_type_e type, BW_enable_e enable, unsigned char* start_ip, unsigned char* end_ip, unsigned char* gateway, unsigned int timeoutS);
 	Ret_Status_e(*at_wAp)(void);
 	Ret_Status_e(*at_wApInfo)(void);
 	Ret_Status_e(*at_ping)(void);

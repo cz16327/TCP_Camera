@@ -33,6 +33,7 @@ EXIT:
 }
 
 static AT_Ack_t g_Ack_t = {
+	// 基础指令应答期望
 	.expect.ack_OK = "OK",
 	.expect.ack_ERROR = "ERROR",
 	.expect.ack_sysMsg = "+SYSMSG:",
@@ -46,4 +47,19 @@ static AT_Ack_t g_Ack_t = {
 	.expect.ack_uartFlowCfg = "+UARTFLOWCONTROL:",
 	.expect.ack_ota = "+OTA:",
 	.expect.ack_tickless = "+TICKLESS:",
+
+	// IO控制指令应答期望
+	.expect.ack_ioMap = "+SYSIOMAP:",
+	.expect.ack_ioRead = "+SYSGPIOREAD:",
+
+	// WIFI基础指令应答期望
+	.expect.ack_wifiMode = "+WMODE:",
+	.expect.ack_wifiScan = "+WSCAN:index SSID,CH,SECURITY,RSSI,BSSID",
+	.expect.ack_wifiScanActive = "+WSCANACTIVE:",
+	.expect.ack_wifiStaDhcp = "+WSDHCP:",
+	.expect.ack_wifiInfoUnused = "+WJAP:",
+	.expect.ack_wifiInfo = "+STAINFO:",
+	.expect.ack_wifiEAP = "+EVENT:WIFI_GOT_IP",
+	.expect.ack_autoCon = "+WAUTOCONN:",
+	.expect.ack_wifiApDhcp = "+WAPDHCP:",
 };

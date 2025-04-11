@@ -6,6 +6,7 @@
 #pragma pack(1)
 typedef struct Expect_def
 {
+	// 基础指令应答期望
 	const char* ack_OK;						// "OK"
 	const char* ack_ERROR;					// "ERROR"
 	const char* ack_sysMsg;					// "+SYSMSG:"
@@ -19,6 +20,21 @@ typedef struct Expect_def
 	const char* ack_uartFlowCfg;			// "+UARTFLOWCONTROL:"
 	const char* ack_ota;					// "+OTA:"
 	const char* ack_tickless;				// "+TICKLESS:"
+
+	// IO控制指令应答期望
+	const char* ack_ioMap;					// "+SYSIOMAP:"
+	const char* ack_ioRead;					// "+SYSGPIOREAD:"
+
+	// WIFI基础指令应答期望
+	const char* ack_wifiMode;				// "+WMODE:"
+	const char* ack_wifiScan;				// "+WSCAN:index SSID,CH,SECURITY,RSSI,BSSID"
+	const char* ack_wifiScanActive;			// "+WSCANACTIVE:"
+	const char* ack_wifiStaDhcp;			// "+WSDHCP:"
+	const char* ack_wifiInfoUnused;			// "+WJAP:"
+	const char* ack_wifiInfo;				// "+STAINFO:"
+	const char* ack_wifiEAP;				// "+EVENT:WIFI_GOT_IP"
+	const char* ack_autoCon;				// "+WAUTOCONN:"
+	const char* ack_wifiApDhcp;				// "+WAPDHCP:"
 } Expect_t;
 
 typedef struct Basic_AT_ACK_def
