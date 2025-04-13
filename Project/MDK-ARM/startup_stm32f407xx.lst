@@ -837,11 +837,11 @@ dlewares/Third_Party/FreeRTOS/Source/include -I../../Middlewares/Third_Party/Fr
 eeRTOS/Source/CMSIS_RTOS_V2 -I../../Middlewares/Third_Party/FreeRTOS/Source/por
 table/RVDS/ARM_CM4F -I../../Middlewares/Third_Party/FatFs/src -I../../Drivers/C
 MSIS/Device/ST/STM32F4xx/Include -I../../Drivers/CMSIS/Include -I.\RTE\_TCP_Cam
- -ID:\Keil5\ARM\PACK\ARM\CMSIS\5.8.0\CMSIS\Core\Include -ID:\Keil5\ARM\PACK\Kei
-l\STM32F4xx_DFP\2.17.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="_
-_MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 535" --predefine="_RTE_ S
-ETA 1" --predefine="STM32F407xx SETA 1" --predefine="_RTE_ SETA 1" --list=start
-up_stm32f407xx.lst startup_stm32f407xx.s
+ -IE:\Keil51\Keil5\ARM\CMSIS\5.8.0\CMSIS\Core\Include -IE:\Keil51\Keil5\Keil\ST
+M32F4xx_DFP\2.16.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="__MIC
+ROLIB SETA 1" --predefine="__UVISION_VERSION SETA 536" --predefine="_RTE_ SETA 
+1" --predefine="STM32F407xx SETA 1" --predefine="_RTE_ SETA 1" --list=startup_s
+tm32f407xx.lst startup_stm32f407xx.s
 
 
 

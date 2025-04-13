@@ -219,6 +219,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM2) {
 		SysInfo_t* sysInfo = get_sysInfo_t();
 		vbat_get(&sysInfo->vbat);
+		IWDG_Feed();
 	}
   /* USER CODE END Callback 1 */
 }

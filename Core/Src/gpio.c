@@ -209,15 +209,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if (GPIO_Pin == BUTTON1_Pin)
 		if (BOTTON1_GET == GPIO_PIN_RESET) {
 			CZ_LOG("BOTTON 1 get\r\n");
-			WIFI_DIS;
-			LED_OFF;
 		}
 
 	if (GPIO_Pin == BUTTON2_Pin)
 		if (BOTTON2_GET == GPIO_PIN_RESET) {
 			CZ_LOG("BOTTON 2 get\r\n");
-			WIFI_EN;
-			LED_ON;
 		}
 	
 	if (GPIO_Pin == SIDO_CD_Pin)

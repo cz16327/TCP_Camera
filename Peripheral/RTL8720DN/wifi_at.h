@@ -4,6 +4,7 @@
 #include "main.h"
 
 #define USARTx	huart2
+#define WAIT_USART_DMA (500)	// 等待DMA发送完成的时间
 #define WAIT_MS	(1000)
 
 /***** 执行方式枚举体 *****/

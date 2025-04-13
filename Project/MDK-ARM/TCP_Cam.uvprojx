@@ -13,8 +13,8 @@
         <TargetCommonOption>
           <Device>STM32F407VETx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.2.17.0</PackID>
-          <PackURL>https://www.keil.com/pack/</PackURL>
+          <PackID>Keil.STM32F4xx_DFP.2.16.0</PackID>
+          <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001BFFF) IRAM2(0x2001C000-0x2001FFFF) IROM(0x8000000-0x807FFFF) CLOCK(25000000) FPU2 CPUTYPE("Cortex-M4") TZ</Cpu>
           <FlashUtilSpec />
           <StartupFile />
@@ -77,7 +77,7 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>1</RunUserProg1>
+            <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
             <UserProg1Name>D:\Keil5\ARM\ARMCC\bin\fromelf.exe --bin --output ./Output/TCP_Cam.bin ./TCP_Cam/TCP_Cam.axf</UserProg1Name>
             <UserProg2Name />
@@ -336,7 +336,7 @@
               <MiscControls />
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine />
-              <IncludePath>../../Core/Inc;../../FATFS/Target;../../FATFS/App;../../Drivers/STM32F4xx_HAL_Driver/Inc;../../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../../Middlewares/Third_Party/FreeRTOS/Source/include;../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../Middlewares/Third_Party/FatFs/src;../../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../../Drivers/CMSIS/Include;../../Peripheral/RTL8720DN;../../Common;../../cm_backtrace;../../cm_backtrace/Languages/zh-CN;../../cm_backtrace/Languages/en-US;../../cm_backtrace/fault_handler/keil</IncludePath>
+              <IncludePath>../../Core/Inc;../../FATFS/Target;../../FATFS/App;../../Drivers/STM32F4xx_HAL_Driver/Inc;../../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../../Middlewares/Third_Party/FreeRTOS/Source/include;../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../Middlewares/Third_Party/FatFs/src;../../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../../Drivers/CMSIS/Include;../../Peripheral/RTL8720DN;../../Common;../../cm_backtrace;../../cm_backtrace/Languages/zh-CN;../../cm_backtrace/Languages/en-US;../../cm_backtrace/fault_handler/keil;../../Peripheral/AT24C02</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -941,6 +941,16 @@
               <FileName>wifi_data.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Peripheral\RTL8720DN\wifi_data.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Peripheral/AT24C02</GroupName>
+          <Files>
+            <File>
+              <FileName>AT24C02.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Peripheral\AT24C02\AT24C02.c</FilePath>
             </File>
           </Files>
         </Group>

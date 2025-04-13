@@ -14,6 +14,30 @@ AT_t* get_AT_t(void)
 }
 
 
+/// @brief 删除 AT 指令最后的逗号
+/// @param cmd 指令内容
+/// @param len 指令长度
+static void delete_cmd_last_comma(unsigned char *cmd, unsigned int *len)
+{
+	if (*len < 3) {
+		CZ_ERR("AT cmd error len < 3 \r\n");
+		return;
+	}
+	if (cmd[*len - 2] != '\r' || cmd[*len - 1] != '\n') {
+		CZ_ERR("AT cmd error need \\r\\n [%02X %02X]\r\n", cmd[*len - 2], cmd[*len - 1]);
+		return;
+	}
+	unsigned char* ptail = &cmd[*len - 3];
+	while (ptail >= cmd && *ptail == ',') {
+		*ptail = *(ptail + 1);
+		*(ptail + 1) = *(ptail + 2);
+		*(ptail + 2) = '\0';
+		ptail++;
+		*len--;
+	}
+}
+
+
 /// @brief AT 指令发送函数
 /// @param cmd 指令字符串
 /// @param len 指令长度
@@ -24,16 +48,27 @@ Ret_Status_e atcmd_send(unsigned char* cmd, unsigned int len, const char* expect
 {
 	Ret_Status_e ret = CZ_ERROR;
 	unsigned int timeout = HAL_GetTick();
+	delete_cmd_last_comma(cmd, &len);
+	CZ_LOG("%d[%d] %s\r\n", strlen((const char*)cmd), len, cmd);
 	HAL_UART_Transmit_DMA(&USARTx, cmd, len);
-
+	while (USARTx.gState != HAL_UART_STATE_READY) {
+        if ((HAL_GetTick() - timeout) > WAIT_USART_DMA) {
+            CZ_ERR("USART DMA send timeout\r\n");
+            ret = CZ_BUSY;
+            goto EXIT;
+        }
+    }
 	if (timeoutS) {
-		while (analytic_ack(expect) != CZ_OK) {
+		while (ret != CZ_OK) {
+			ret = analytic_ack(expect);
 			if ((HAL_GetTick() - timeout) > timeoutS * 1000) {
 				CZ_ERR("timeout\r\n");
 				ret = CZ_TIMEOUT;
+				goto EXIT;
 			}
 		}
 	}
+EXIT:
 	return ret;
 }
 
@@ -48,7 +83,7 @@ static Ret_Status_e test_at(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -66,7 +101,7 @@ static Ret_Status_e help_list(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT+HELP\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -84,7 +119,7 @@ static Ret_Status_e mcu_rst(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT+RST\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -102,7 +137,7 @@ static Ret_Status_e mcu_restore(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT+RESTORE\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -120,7 +155,7 @@ static Ret_Status_e mcu_echo_enable(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "ATE1\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -138,7 +173,7 @@ static Ret_Status_e mcu_echo_disable(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "ATE0\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -159,12 +194,12 @@ static Ret_Status_e mcu_sysMsgCfg(At_type_e type, SysMsg_mode_e mode, Mask_e mas
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+SYSMSG?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_sysMsg, timeoutS);
 	} else if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+SYSMSG=%d,%08x,%d\r\n", mode, mask, saveFlash);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -182,7 +217,7 @@ static Ret_Status_e mcu_version(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT+GMR\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_atVer, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -200,7 +235,7 @@ static Ret_Status_e mcu_flashID(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT+FLASHID\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_flashManufacturerID, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -219,7 +254,7 @@ static Ret_Status_e mcu_sleep(At_type_e type, Sleep_mode_e mode, Wakeup_source_e
 	if (type == Set) { // Set
 		unsigned char Set_cmd[30];
 		sprintf((char*)Set_cmd, "AT+SLEEP=%d,%d,%d,%d\r\n", mode, wake, ms_pin, level);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -241,12 +276,12 @@ static Ret_Status_e mcu_uartCfg(At_type_e type, unsigned int baudrate, Uart_data
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+UARTCFG?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_uartCfg, timeoutS);
 	} else if (type == Set) { // Set
 		unsigned char Set_cmd[30];
 		sprintf((char*)Set_cmd, "AT+UARTCFG=%d,%d,%d,%d\r\n", baudrate, databits, stopbits, parity);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -265,12 +300,12 @@ static Ret_Status_e mcu_uartFlowCfg(At_type_e type, Uart_flow_e flowcontrol, uns
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+UARTFLOWCONTROL?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_uartFlowCfg, timeoutS);
 	} else if (type == Set) { // Set
 		unsigned char Set_cmd[30];
 		sprintf((char*)Set_cmd, "AT+UARTFLOWCONTROL=%d\r\n", flowcontrol);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -290,7 +325,7 @@ static Ret_Status_e mcu_download(At_type_e type, Download_mode_e mode, unsigned 
 	if (type == Set) { // Set
 		unsigned char Set_cmd[30];
 		sprintf((char*)Set_cmd, "AT+SETDOWNLOADMODE=%d\r\n", mode);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -312,7 +347,7 @@ static Ret_Status_e mcu_ota(At_type_e type, OTA_mode_e mode, unsigned char* Host
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+OTA?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_ota, timeoutS);
 	} else if (type == Set) { // Set
 		if (!Host_name)
@@ -321,11 +356,11 @@ static Ret_Status_e mcu_ota(At_type_e type, OTA_mode_e mode, unsigned char* Host
 			Route = "";
 		unsigned char Set_cmd[strlen((const char*)Host_name) + strlen((const char*)Route) + 20];
 		sprintf((char*)Set_cmd, "AT+OTA=%d,%s,%d,%s\r\n", mode, Host_name, Port, Route);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	} else if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT+OTA\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -344,12 +379,12 @@ static Ret_Status_e mcu_tickless(At_type_e type, unsigned char tickless, unsigne
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+TICKLESS?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_tickless, timeoutS);
 	} else if (type == Set) { // Set
 		unsigned char Set_cmd[20];
 		sprintf((char*)Set_cmd, "AT+OTA=%d\r\n", tickless);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -369,7 +404,7 @@ static Ret_Status_e io_map(At_type_e type, unsigned char PinNumber, unsigned cha
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+SYSIOMAP?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_ioMap, timeoutS);
 	} else if (type == Set) { // Set
 		if (!pinx_list)
@@ -377,7 +412,7 @@ static Ret_Status_e io_map(At_type_e type, unsigned char PinNumber, unsigned cha
 		// BW16 默认映射 AT+SYSIOMAP=16,21,34,NC,23,NC,26,29,NC,NC,30,NC,22,27,20,NC,NC
 		unsigned char Set_cmd[strlen((const char*)pinx_list) + 20];
 		sprintf((char*)Set_cmd, "AT+SYSIOMAP=%d,%s\r\n", PinNumber, pinx_list);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -398,7 +433,7 @@ static Ret_Status_e io_write(At_type_e type, unsigned char pin, IO_level_e level
 	if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+SYSGPIOWRITE=%d,%d\r\n", pin, level);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -418,7 +453,7 @@ static Ret_Status_e io_read(At_type_e type, unsigned char pin, unsigned int time
 	if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+SYSGPIOREAD=%d\r\n", pin);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_ioRead, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -442,7 +477,7 @@ static Ret_Status_e io_pwmCfgUs(At_type_e type, unsigned char pin, unsigned int 
 	if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+PWMCFG=%d,%d,%d\r\n", pin, cycle, duty);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -464,7 +499,7 @@ static Ret_Status_e io_pwmCfgPer(At_type_e type, unsigned char pin, unsigned int
 	if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+PWMCFGS=%d,%d,%d\r\n", pin, cycle, duty);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -484,7 +519,7 @@ static Ret_Status_e io_pwmStop(At_type_e type, unsigned char pin, unsigned int t
 	if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+PWMSTOP=%d\r\n", pin);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -507,7 +542,7 @@ static Ret_Status_e io_pwmSetDutyUs(At_type_e type, unsigned char pin, unsigned 
 	if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+PWMDUTYSET=%d,%d\r\n", pin, duty);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -527,7 +562,7 @@ static Ret_Status_e io_pwmSetDutyPer(At_type_e type, unsigned char pin, unsigned
 	if (type == Set) { // Set
 		unsigned char Set_cmd[25];
 		sprintf((char*)Set_cmd, "AT+PWMDUTYSETS=%d,%d\r\n", pin, duty);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -547,14 +582,14 @@ static Ret_Status_e wifi_mode(At_type_e type, Wifi_mode_e mode, Save_e saveFlash
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+WMODE?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiMode, timeoutS);
 	} else if (type == Set) { // Set
 		unsigned char Set_cmd[20];
 		if (mode == UNINIT_MODE)
 			saveFlash = UNSAVE;
 		sprintf((char*)Set_cmd, "AT+WMODE=%d,%d\r\n", mode, saveFlash);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -572,7 +607,7 @@ static Ret_Status_e wifi_disconnect(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Excution) { // Excution
 		unsigned char Excution_cmd[] = "AT+WDISCONNECT\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Excution_cmd), Excution_cmd);
 		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -594,7 +629,7 @@ static Ret_Status_e wifi_scan(At_type_e type, unsigned char* ssid, unsigned char
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+WSCAN?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiScan, timeoutS);
 	} else if (type == Set) { // Set
 		if (!ssid)
@@ -603,7 +638,7 @@ static Ret_Status_e wifi_scan(At_type_e type, unsigned char* ssid, unsigned char
 			mac = "";
 		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)mac) + 30];
 		sprintf((char*)Set_cmd, "AT+WSCAN=%s,%s,%d,%d\r\n", ssid, mac, channel, rssi);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiScan, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -625,7 +660,7 @@ static Ret_Status_e wifi_scanActive(At_type_e type, unsigned char* ssid, unsigne
 			ssid = "";
 		unsigned char Set_cmd[strlen((const char*)ssid) + 20];
 		sprintf((char*)Set_cmd, "AT+WSCANACTIVE=%s\r\n", ssid);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiScanActive, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -647,7 +682,7 @@ static Ret_Status_e wifi_staDhcp(At_type_e type, IP_mode_e mode, unsigned char* 
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+WSDHCP?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiStaDhcp, timeoutS);
 	} else if (type == Set) { // Set
 		if (!ip)
@@ -658,7 +693,7 @@ static Ret_Status_e wifi_staDhcp(At_type_e type, IP_mode_e mode, unsigned char* 
 			gateway = "";
 		unsigned char Set_cmd[strlen((const char*)ip) + strlen((const char*)mask) + strlen((const char*)gateway) + 30];
 		sprintf((char*)Set_cmd, "AT+WSDHCP=%d,%s,%s,%s\r\n", mode, ip, mask, gateway);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -680,7 +715,7 @@ static Ret_Status_e wifi_connect(At_type_e type, unsigned char* ssid, unsigned c
 	if (type == Query) { // Query
 		fprintf(stderr, "AT+WJAP? is legacy, use AT+STAINFO? instead of AT+WJAP?\r\n");
 		unsigned char Query_cmd[] = "AT+WJAP?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiInfoUnused, timeoutS);
 	} else if (type == Set) { // Set
 		if (!ssid)
@@ -691,7 +726,7 @@ static Ret_Status_e wifi_connect(At_type_e type, unsigned char* ssid, unsigned c
 			bssid = "";
 		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)pwd) + strlen((const char*)bssid) + 20];
 		sprintf((char*)Set_cmd, "AT+WJAP=%s,%s,%s\r\n", ssid, pwd, bssid);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -709,7 +744,7 @@ static Ret_Status_e wifi_info(At_type_e type, unsigned int timeoutS)
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+STAINFO?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiInfo, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -738,7 +773,7 @@ static Ret_Status_e wifi_companyAP(At_type_e type, EAP_type_e EAPtype, unsigned 
 			pwd = "";
 		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)identity) + strlen((const char*)pwd) + 20];
 		sprintf((char*)Set_cmd, "AT+WJEAP=%d,%s,%s,%s\r\n", EAPtype, ssid, identity, pwd);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiEAP, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -760,7 +795,7 @@ static Ret_Status_e wifi_autoConn(At_type_e type, BW_enable_e enable, unsigned c
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+WAUTOCONN?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_autoCon, timeoutS);
 	} else if (type == Set) { // Set
 		if (!ssid)
@@ -771,7 +806,7 @@ static Ret_Status_e wifi_autoConn(At_type_e type, BW_enable_e enable, unsigned c
 			bssid = "";
 		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)pwd) + strlen((const char*)bssid) + 25];
 		sprintf((char*)Set_cmd, "AT+WAUTOCONN=%d,%s,%s,%s\r\n", enable, ssid, pwd, bssid);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
@@ -793,7 +828,7 @@ static Ret_Status_e wifi_apDhcp(At_type_e type, BW_enable_e enable, unsigned cha
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+WAUTOCONN?\r\n";
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiApDhcp, timeoutS);
 	} else if (type == Set) { // Set
 		if (!start_ip)
@@ -804,7 +839,7 @@ static Ret_Status_e wifi_apDhcp(At_type_e type, BW_enable_e enable, unsigned cha
 			gateway = "";
 		unsigned char Set_cmd[strlen((const char*)start_ip) + strlen((const char*)end_ip) + strlen((const char*)gateway) + 25];
 		sprintf((char*)Set_cmd, "AT+WAUTOCONN=%d,%s,%s,%s\r\n", enable, start_ip, end_ip, gateway);
-		CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
