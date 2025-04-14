@@ -30,7 +30,7 @@
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
-#include "usb_otg.h"
+#include "usb_device.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -113,7 +113,6 @@ int main(void)
   MX_FATFS_Init();
   MX_CAN1_Init();
   MX_I2C1_Init();
-  MX_USB_OTG_HS_USB_Init();
   MX_ADC1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
@@ -121,8 +120,9 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 #ifdef CM_BACKTRACE
-  cm_backtrace_init(APPNAME, HARDWARE_VERSION, SOFTWARE_VERSION);
+	cm_backtrace_init(APPNAME, HARDWARE_VERSION, SOFTWARE_VERSION);
 #endif
+	SD_Driver.disk_initialize(0);
   /* USER CODE END 2 */
 
   /* Init scheduler */

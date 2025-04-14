@@ -52,7 +52,7 @@ extern "C" {
 // SD 开关电
 #define SD_PWRON		HAL_GPIO_WritePin(SD_PWR_EN_GPIO_Port, SD_PWR_EN_Pin, GPIO_PIN_SET)
 #define SD_PWROFF		HAL_GPIO_WritePin(SD_PWR_EN_GPIO_Port, SD_PWR_EN_Pin, GPIO_PIN_RESET)
-// SD 检查
+// SD 插入检查
 #define SD_CHECK		HAL_GPIO_ReadPin(SIDO_CD_GPIO_Port, SIDO_CD_Pin)
 // WIFI 开关电
 #define WIFI_PWRON		HAL_GPIO_WritePin(WIFI_PWR_EN_GPIO_Port, WIFI_PWR_EN_Pin, GPIO_PIN_SET)

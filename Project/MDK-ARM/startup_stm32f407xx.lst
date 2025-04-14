@@ -46,22 +46,22 @@ ARM Macro Assembler    Page 1
    29 00000000         ;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
    30 00000000         ; </h>
    31 00000000         
-   32 00000000 00000400 
+   32 00000000 00001000 
                        Stack_Size
-                               EQU              0x400
+                               EQU              0x1000
    33 00000000         
    34 00000000                 AREA             STACK, NOINIT, READWRITE, ALIGN
 =3
    35 00000000         Stack_Mem
                                SPACE            Stack_Size
-   36 00000400         __initial_sp
-   37 00000400         
-   38 00000400         
-   39 00000400         ; <h> Heap Configuration
-   40 00000400         ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
-   41 00000400         ; </h>
-   42 00000400         
-   43 00000400 00001000 
+   36 00001000         __initial_sp
+   37 00001000         
+   38 00001000         
+   39 00001000         ; <h> Heap Configuration
+   40 00001000         ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+   41 00001000         ; </h>
+   42 00001000         
+   43 00001000 00001000 
                        Heap_Size
 
 
@@ -70,8 +70,8 @@ ARM Macro Assembler    Page 2
 
 
                                EQU              0x1000
-   44 00000400         
-   45 00000400                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
+   44 00001000         
+   45 00001000                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
 3
    46 00000000         __heap_base
    47 00000000         Heap_Mem
@@ -837,11 +837,11 @@ dlewares/Third_Party/FreeRTOS/Source/include -I../../Middlewares/Third_Party/Fr
 eeRTOS/Source/CMSIS_RTOS_V2 -I../../Middlewares/Third_Party/FreeRTOS/Source/por
 table/RVDS/ARM_CM4F -I../../Middlewares/Third_Party/FatFs/src -I../../Drivers/C
 MSIS/Device/ST/STM32F4xx/Include -I../../Drivers/CMSIS/Include -I.\RTE\_TCP_Cam
- -IE:\Keil51\Keil5\ARM\CMSIS\5.8.0\CMSIS\Core\Include -IE:\Keil51\Keil5\Keil\ST
-M32F4xx_DFP\2.16.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="__MIC
-ROLIB SETA 1" --predefine="__UVISION_VERSION SETA 536" --predefine="_RTE_ SETA 
-1" --predefine="STM32F407xx SETA 1" --predefine="_RTE_ SETA 1" --list=startup_s
-tm32f407xx.lst startup_stm32f407xx.s
+ -ID:\Keil5\ARM\PACK\ARM\CMSIS\5.8.0\CMSIS\Core\Include -ID:\Keil5\ARM\PACK\Kei
+l\STM32F4xx_DFP\2.17.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="_
+_MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 535" --predefine="_RTE_ S
+ETA 1" --predefine="STM32F407xx SETA 1" --predefine="_RTE_ SETA 1" --list=start
+up_stm32f407xx.lst startup_stm32f407xx.s
 
 
 
@@ -864,7 +864,7 @@ Symbol: Stack_Mem
    Uses
       None
 Comment: Stack_Mem unused
-__initial_sp 00000400
+__initial_sp 00001000
 
 Symbol: __initial_sp
    Definitions
@@ -1886,7 +1886,7 @@ Symbol: Heap_Size
    Uses
       At line 47 in file startup_stm32f407xx.s
 Comment: Heap_Size used once
-Stack_Size 00000400
+Stack_Size 00001000
 
 Symbol: Stack_Size
    Definitions

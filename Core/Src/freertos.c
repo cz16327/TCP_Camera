@@ -31,6 +31,7 @@
 #include "iwdg.h"
 #include "wifi_at.h"
 #include "AT24C02.h"
+#include "fatfs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,6 +64,13 @@ const osThreadAttr_t startTask_attributes = {
   .name = "startTask",
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for sdCardTask */
+osThreadId_t sdCardTaskHandle;
+const osThreadAttr_t sdCardTask_attributes = {
+  .name = "sdCardTask",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityLow1,
 };
 /* Definitions for atAck_semaphores */
 osSemaphoreId_t atAck_semaphoresHandle;
@@ -112,7 +120,9 @@ void memoryPool_init(void)
 /* USER CODE END FunctionPrototypes */
 
 void StartTask(void *argument);
+void SDCardTask(void *argument);
 
+extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
@@ -162,6 +172,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of startTask */
   startTaskHandle = osThreadNew(StartTask, NULL, &startTask_attributes);
 
+  /* creation of sdCardTask */
+  sdCardTaskHandle = osThreadNew(SDCardTask, NULL, &sdCardTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 		/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -181,6 +194,8 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartTask */
 void StartTask(void *argument)
 {
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartTask */
 	memoryPool_init();
 	cz_log_set_level(LOG_LEVEL_DBG);
@@ -205,7 +220,6 @@ void StartTask(void *argument)
 	// Ret_Status_e iii;
 	// unsigned char data[30] = {0};
 	// unsigned char get_data[30] = {0};
-	extern SD_HandleTypeDef hsd;
 	for (;;) {
 		// i++;
 		// sprintf((char *)data, "hello AT24C02 %d !\r\n", i);
@@ -214,41 +228,61 @@ void StartTask(void *argument)
 		// iii = at24c02_read(0, get_data, sizeof(get_data));
 		// CZ_RAW("%s [%d %d]\r\n", get_data, ii, iii);
 
-		CZ_RAW("Micro SD Card Test...\r\n");
-		/* 检测SD卡是否正常（处于数据传输模式的传输状态） */
-		if (HAL_SD_GetCardState(&hsd) == HAL_SD_CARD_TRANSFER) {
-			CZ_RAW("Initialize SD card successfully!\r\n");
-			// 打印SD卡基本信息
-			CZ_RAW("SD card information! \r\n");
-			CZ_RAW("CardCapacity  : %llu \r\n", (unsigned long long)hsd.SdCard.BlockSize * hsd.SdCard.BlockNbr);// 显示容量
-			CZ_RAW("CardBlockSize : %d \r\n", hsd.SdCard.BlockSize);   // 块大小
-			CZ_RAW("LogBlockNbr   : %d \r\n", hsd.SdCard.LogBlockNbr);	// 逻辑块数量
-			CZ_RAW("LogBlockSize  : %d \r\n", hsd.SdCard.LogBlockSize);// 逻辑块大小
-			CZ_RAW("RCA           : %d \r\n", hsd.SdCard.RelCardAdd);  // 卡相对地址
-			CZ_RAW("CardType      : %d \r\n", hsd.SdCard.CardType);    // 卡类型
-			// 读取并打印SD卡的CID信息
-			HAL_SD_CardCIDTypeDef sdcard_cid;
-			HAL_SD_GetCardCID(&hsd,&sdcard_cid);
-			CZ_RAW(" ManufacturerID: %d \r\n",sdcard_cid.ManufacturerID);
-		} else {
-			CZ_RAW("SD card init fail!\r\n" );
-		}
-
-		/* 擦除SD卡块 */
-		CZ_RAW("------------------- Block Erase -------------------------------\r\n");
-		if(HAL_SD_Erase(&hsd, BLOCK_START_ADDR, NUM_OF_BLOCKS) == HAL_OK) {
-			/* Wait until SD cards are ready to use for new operation */
-			while(HAL_SD_GetCardState(&hsd) != HAL_SD_CARD_TRANSFER);
-			CZ_RAW("\r\nErase Block Success!\r\n");
-		} else {
-			CZ_RAW("\r\nErase Block Failed!\r\n");
-		}
-
 		IWDG_Feed();
 		LED_TOGGLE;
-		osDelay(1000);
+		osDelay(500);
 	}
   /* USER CODE END StartTask */
+}
+
+/* USER CODE BEGIN Header_SDCardTask */
+/**
+* @brief Function implementing the sdCardTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_SDCardTask */
+void SDCardTask(void *argument)
+{
+  /* USER CODE BEGIN SDCardTask */
+	// extern SD_HandleTypeDef hsd;
+	/* Infinite loop */
+	for(;;) {
+		Fatfs_RW_test();
+		SDCardInfo();
+		// CZ_RAW("Micro SD Card Test...\r\n");
+		// /* 检测SD卡是否正常（处于数据传输模式的传输状态） */
+		// if (HAL_SD_GetCardState(&hsd) == HAL_SD_CARD_TRANSFER) {
+		// 	CZ_RAW("Initialize SD card successfully!\r\n");
+		// 	// 打印SD卡基本信息
+		// 	CZ_RAW("SD card information! \r\n");
+		// 	CZ_RAW("CardCapacity  : %llu \r\n", (unsigned long long)hsd.SdCard.BlockSize * hsd.SdCard.BlockNbr);// 显示容量
+		// 	CZ_RAW("CardBlockSize : %d \r\n", hsd.SdCard.BlockSize);   // 块大小
+		// 	CZ_RAW("LogBlockNbr   : %d \r\n", hsd.SdCard.LogBlockNbr);	// 逻辑块数量
+		// 	CZ_RAW("LogBlockSize  : %d \r\n", hsd.SdCard.LogBlockSize);// 逻辑块大小
+		// 	CZ_RAW("RCA           : %d \r\n", hsd.SdCard.RelCardAdd);  // 卡相对地址
+		// 	CZ_RAW("CardType      : %d \r\n", hsd.SdCard.CardType);    // 卡类型
+		// 	// 读取并打印SD卡的CID信息
+		// 	HAL_SD_CardCIDTypeDef sdcard_cid;
+		// 	HAL_SD_GetCardCID(&hsd,&sdcard_cid);
+		// 	CZ_RAW(" ManufacturerID: %d \r\n",sdcard_cid.ManufacturerID);
+		// } else {
+		// 	CZ_RAW("SD card init fail!\r\n" );
+		// }
+
+		// /* 擦除SD卡块 */
+		// CZ_RAW("------------------- Block Erase -------------------------------\r\n");
+		// if(HAL_SD_Erase(&hsd, BLOCK_START_ADDR, NUM_OF_BLOCKS) == HAL_OK) {
+		// 	/* Wait until SD cards are ready to use for new operation */
+		// 	while(HAL_SD_GetCardState(&hsd) != HAL_SD_CARD_TRANSFER);
+		// 	while(HAL_SD_GetState(&hsd) != HAL_SD_CARD_TRANSFER);
+		// 	CZ_RAW("\r\nErase Block Success!\r\n");
+		// } else {
+		// 	CZ_RAW("\r\nErase Block Failed!\r\n");
+		// }
+		osDelay(10000);
+	}
+  /* USER CODE END SDCardTask */
 }
 
 /* Private application code --------------------------------------------------*/

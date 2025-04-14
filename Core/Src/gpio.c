@@ -38,20 +38,7 @@
         * Output
         * EVENT_OUT
         * EXTI
-     PC0   ------> USB_OTG_HS_ULPI_STP
-     PC2   ------> USB_OTG_HS_ULPI_DIR
-     PC3   ------> USB_OTG_HS_ULPI_NXT
-     PA3   ------> USB_OTG_HS_ULPI_D0
-     PA4   ------> USB_OTG_HS_SOF
-     PA5   ------> USB_OTG_HS_ULPI_CK
-     PB0   ------> USB_OTG_HS_ULPI_D1
-     PB1   ------> USB_OTG_HS_ULPI_D2
-     PB10   ------> USB_OTG_HS_ULPI_D3
-     PB11   ------> USB_OTG_HS_ULPI_D4
-     PB12   ------> USB_OTG_HS_ULPI_D5
-     PB13   ------> USB_OTG_HS_ULPI_D6
      PA8   ------> RCC_MCO_1
-     PB5   ------> USB_OTG_HS_ULPI_D7
 */
 void MX_GPIO_Init(void)
 {
@@ -91,46 +78,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(TEST_LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC0 PC2 PC3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /*Configure GPIO pin : USB_PHY_RESET_Pin */
   GPIO_InitStruct.Pin = USB_PHY_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
   HAL_GPIO_Init(USB_PHY_RESET_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA3 PA5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB0 PB1 PB10 PB11
-                           PB12 PB13 PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_10|GPIO_PIN_11
-                          |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BOOT1_Pin */
   GPIO_InitStruct.Pin = BOOT1_Pin;
@@ -176,7 +129,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : SD_BSP_Pin */
   GPIO_InitStruct.Pin = SD_BSP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(SD_BSP_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : WIFI_EN_Pin CAM_RST_Pin */
