@@ -104,6 +104,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+	CZ_RAW("HardFault!!!\r\n");
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
@@ -185,20 +186,6 @@ void RTC_WKUP_IRQHandler(void)
   /* USER CODE BEGIN RTC_WKUP_IRQn 1 */
 
   /* USER CODE END RTC_WKUP_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line3 interrupt.
-  */
-void EXTI3_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI3_IRQn 0 */
-
-  /* USER CODE END EXTI3_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(SIDO_CD_Pin);
-  /* USER CODE BEGIN EXTI3_IRQn 1 */
-
-  /* USER CODE END EXTI3_IRQn 1 */
 }
 
 /**

@@ -60,7 +60,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, CAM_IO_Pin|CAM_PWR_EN_Pin|SD_PWR_EN_Pin|WIFI_PWR_EN_Pin
-                          |ADC_VBT_EN_Pin, GPIO_PIN_RESET);
+                          |SD_CD_Pin|ADC_VBT_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_ID_GPIO_Port, USB_ID_Pin, GPIO_PIN_RESET);
@@ -91,8 +91,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BUTTON1_Pin BUTTON2_Pin SIDO_CD_Pin */
-  GPIO_InitStruct.Pin = BUTTON1_Pin|BUTTON2_Pin|SIDO_CD_Pin;
+  /*Configure GPIO pins : BUTTON1_Pin BUTTON2_Pin */
+  GPIO_InitStruct.Pin = BUTTON1_Pin|BUTTON2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
@@ -139,6 +139,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : SD_CD_Pin */
+  GPIO_InitStruct.Pin = SD_CD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SD_CD_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : SPI1_CS_Pin */
   GPIO_InitStruct.Pin = SPI1_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -147,9 +154,6 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(SPI1_CS_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
-
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
@@ -169,7 +173,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			CZ_LOG("BOTTON 2 get\r\n");
 		}
 	
-	if (GPIO_Pin == SIDO_CD_Pin)
+	if (GPIO_Pin == SD_CD_Pin)
 		if (BOTTON2_GET == GPIO_PIN_RESET) {
 			CZ_LOG("SD get\r\n");
 		}

@@ -104,7 +104,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_IWDG_Init();
+//   MX_IWDG_Init();
   MX_SDIO_SD_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
@@ -119,10 +119,12 @@ int main(void)
   MX_RTC_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+	delay_init();
 #ifdef CM_BACKTRACE
 	cm_backtrace_init(APPNAME, HARDWARE_VERSION, SOFTWARE_VERSION);
 #endif
-	SD_Driver.disk_initialize(0);
+	// SD_Driver.disk_initialize(0);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -138,12 +140,11 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -219,7 +220,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM2) {
 		SysInfo_t* sysInfo = get_sysInfo_t();
 		vbat_get(&sysInfo->vbat);
-		IWDG_Feed();
+		// IWDG_Feed();
 	}
   /* USER CODE END Callback 1 */
 }
@@ -231,11 +232,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -250,8 +250,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	/* User can add his own implementation to report the file name and line number,
+	   ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

@@ -89,9 +89,8 @@ void Error_Handler(void);
 #define SD_BSP_GPIO_Port GPIOD
 #define WIFI_EN_Pin GPIO_PIN_1
 #define WIFI_EN_GPIO_Port GPIOD
-#define SIDO_CD_Pin GPIO_PIN_3
-#define SIDO_CD_GPIO_Port GPIOD
-#define SIDO_CD_EXTI_IRQn EXTI3_IRQn
+#define SD_CD_Pin GPIO_PIN_3
+#define SD_CD_GPIO_Port GPIOD
 #define ADC_VBT_EN_Pin GPIO_PIN_4
 #define ADC_VBT_EN_GPIO_Port GPIOD
 #define CAM_RST_Pin GPIO_PIN_7

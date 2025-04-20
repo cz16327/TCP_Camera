@@ -48,7 +48,7 @@ void MX_SDIO_SD_Init(void)
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
   hsd.Init.ClockDiv = 0;
   /* USER CODE BEGIN SDIO_Init 2 */
-	// 上方改为 SDIO_BUS_WIDE_1B 因为初始化时，需要低速率，1线通信即可。如果不修改，初始化过程会导致程序卡死。
+	// 上方改为 SDIO_BUS_WIDE_1B 因为初始化时，需要低速率，1线通信即可。如果不修改，初始化过程会导致程序卡死或失败。
 	// 已在FATFS中初始化
 	// if (HAL_SD_Init(&hsd) != HAL_OK) {
 	// 	Error_Handler();
@@ -86,14 +86,14 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
                           |GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
@@ -105,12 +105,12 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
     hdma_sdio_rx.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_sdio_rx.Init.MemInc = DMA_MINC_ENABLE;
     hdma_sdio_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    hdma_sdio_rx.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    hdma_sdio_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_sdio_rx.Init.Mode = DMA_PFCTRL;
-    hdma_sdio_rx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_sdio_rx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     hdma_sdio_rx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
     hdma_sdio_rx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-    hdma_sdio_rx.Init.MemBurst = DMA_MBURST_INC4;
+    hdma_sdio_rx.Init.MemBurst = DMA_MBURST_SINGLE;
     hdma_sdio_rx.Init.PeriphBurst = DMA_PBURST_INC4;
     if (HAL_DMA_Init(&hdma_sdio_rx) != HAL_OK)
     {
@@ -126,12 +126,12 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
     hdma_sdio_tx.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_sdio_tx.Init.MemInc = DMA_MINC_ENABLE;
     hdma_sdio_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    hdma_sdio_tx.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    hdma_sdio_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_sdio_tx.Init.Mode = DMA_PFCTRL;
-    hdma_sdio_tx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_sdio_tx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     hdma_sdio_tx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
     hdma_sdio_tx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-    hdma_sdio_tx.Init.MemBurst = DMA_MBURST_INC4;
+    hdma_sdio_tx.Init.MemBurst = DMA_MBURST_SINGLE;
     hdma_sdio_tx.Init.PeriphBurst = DMA_PBURST_INC4;
     if (HAL_DMA_Init(&hdma_sdio_tx) != HAL_OK)
     {

@@ -82,7 +82,9 @@ const char FR_Table[20][30] = {
 
 char filename[] = "STM32F407_SDIO_TEST.txt";
 char wtext[] = "SUPER IDIL 的笑容都没你的甜，八月的阳光都没你耀眼爱上，爱上105度的你，还有纯净的蒸馏水";
-char rtext[100];
+char rtext[sizeof(wtext)] = {0};
+char readfile[] = "SD card test.txt";
+char readfile1[] = "SD_TEST_TEXT.txt";
 
 void Fatfs_RW_test(void)
 {
@@ -96,7 +98,7 @@ void Fatfs_RW_test(void)
 	if (retSD) {
 		CZ_RAW("mount error: %d,%s\r\n", retSD, FR_Table[retSD]);
 	} else {
-		CZ_RAW("mount success!!! \r\n");
+		CZ_RAW("mount success!!!\r\n");
 	}
 
 	retSD = f_getfree((const TCHAR*)SDPath, (DWORD*)&fre_clust, &fs1);
@@ -130,7 +132,7 @@ void Fatfs_RW_test(void)
 		CZ_RAW("close success!!!\r\n");
 	}
 
-	retSD = f_open(&fil, "SD card test document.txt", FA_READ);
+	retSD = f_open(&fil, readfile, FA_READ);
 	if (retSD) {
 		CZ_RAW("open error: %d,%s\r\n", retSD, FR_Table[retSD]);
 	} else {
@@ -151,7 +153,7 @@ void Fatfs_RW_test(void)
 		CZ_RAW("close success!!!\r\n");
 	}
 
-	retSD = f_open(&fil, "SD_TEST_TEXT.txt", FA_READ);
+	retSD = f_open(&fil, readfile1, FA_READ);
 	if (retSD) {
 		CZ_RAW("open error: %d,%s\r\n", retSD, FR_Table[retSD]);
 	} else {
@@ -219,6 +221,8 @@ void SDCardInfo(void)
 		CZ_RAW("Block Number: %d \r\n", pCardInfo.BlockNbr);	// 可用的块数量
 		CZ_RAW("Block Size:   %d \r\n", pCardInfo.BlockSize);	// 每个块的大小; 单位：字节
 		CZ_RAW("SD Card Size: %lluGB \r\n", ((uint64_t)pCardInfo.BlockSize * pCardInfo.BlockNbr) / 1024 / 1024 / 1024); // 计算卡的容量; 单位：GB
+	} else {
+		CZ_RAW("SD Card Error: %d\r\n", status);
 	}
 }
 /* USER CODE END Application */

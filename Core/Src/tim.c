@@ -21,7 +21,7 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "adc.h"
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim2;
@@ -329,10 +329,12 @@ void tim_vbat_adc_enable(Able_e enable)
 {
 	if (enable) {
 		__HAL_TIM_SetCounter(&htim2, 0);
+		HAL_ADC_Start(&hadc1);	//启动ADC转换
 		HAL_TIM_Base_Start_IT(&htim2);
 	} else {
 		HAL_TIM_Base_Stop_IT(&htim2);
 		__HAL_TIM_SetCounter(&htim2, 0);
+		HAL_ADC_Stop(&hadc1);	//关闭ADC转换
 	}
 }
 

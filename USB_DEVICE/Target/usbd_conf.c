@@ -83,7 +83,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
     PC2     ------> USB_OTG_HS_ULPI_DIR
     PC3     ------> USB_OTG_HS_ULPI_NXT
     PA3     ------> USB_OTG_HS_ULPI_D0
-    PA4     ------> USB_OTG_HS_SOF
     PA5     ------> USB_OTG_HS_ULPI_CK
     PB0     ------> USB_OTG_HS_ULPI_D1
     PB1     ------> USB_OTG_HS_ULPI_D2
@@ -105,13 +104,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_4;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_10|GPIO_PIN_11
@@ -151,7 +143,6 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
     PC2     ------> USB_OTG_HS_ULPI_DIR
     PC3     ------> USB_OTG_HS_ULPI_NXT
     PA3     ------> USB_OTG_HS_ULPI_D0
-    PA4     ------> USB_OTG_HS_SOF
     PA5     ------> USB_OTG_HS_ULPI_CK
     PB0     ------> USB_OTG_HS_ULPI_D1
     PB1     ------> USB_OTG_HS_ULPI_D2
@@ -163,7 +154,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
     */
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_3);
 
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3|GPIO_PIN_5);
 
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_10|GPIO_PIN_11
                           |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_5);
@@ -390,7 +381,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd_USB_OTG_HS.Init.speed = PCD_SPEED_HIGH;
   hpcd_USB_OTG_HS.Init.dma_enable = DISABLE;
   hpcd_USB_OTG_HS.Init.phy_itface = USB_OTG_ULPI_PHY;
-  hpcd_USB_OTG_HS.Init.Sof_enable = ENABLE;
+  hpcd_USB_OTG_HS.Init.Sof_enable = DISABLE;
   hpcd_USB_OTG_HS.Init.low_power_enable = DISABLE;
   hpcd_USB_OTG_HS.Init.lpm_enable = DISABLE;
   hpcd_USB_OTG_HS.Init.vbus_sensing_enable = DISABLE;

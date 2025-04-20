@@ -16,14 +16,16 @@
   *
   ******************************************************************************
   */
-  /* USER CODE END Header */
+/* USER CODE END Header */
 
-  /* Includes ------------------------------------------------------------------*/
+/* Includes ------------------------------------------------------------------*/
 #include "usbd_storage_if.h"
 
 /* USER CODE BEGIN INCLUDE */
 #include "sdio.h"
 #include "fatfs.h"
+#include "gpio.h"
+#include "main.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,61 +42,61 @@
   * @{
   */
 
-  /** @defgroup USBD_STORAGE
-	* @brief Usb mass storage device module
-	* @{
-	*/
+/** @defgroup USBD_STORAGE
+  * @brief Usb mass storage device module
+  * @{
+  */
 
-	/** @defgroup USBD_STORAGE_Private_TypesDefinitions
-	  * @brief Private types.
-	  * @{
-	  */
+/** @defgroup USBD_STORAGE_Private_TypesDefinitions
+  * @brief Private types.
+  * @{
+  */
 
-	  /* USER CODE BEGIN PRIVATE_TYPES */
+/* USER CODE BEGIN PRIVATE_TYPES */
 
-	  /* USER CODE END PRIVATE_TYPES */
+/* USER CODE END PRIVATE_TYPES */
 
-	  /**
-		* @}
-		*/
+/**
+  * @}
+  */
 
-		/** @defgroup USBD_STORAGE_Private_Defines
-		  * @brief Private defines.
-		  * @{
-		  */
+/** @defgroup USBD_STORAGE_Private_Defines
+  * @brief Private defines.
+  * @{
+  */
 
 #define STORAGE_LUN_NBR                  1
 #define STORAGE_BLK_NBR                  0x10000
 #define STORAGE_BLK_SIZ                  0x200
 
-		  /* USER CODE BEGIN PRIVATE_DEFINES */
+/* USER CODE BEGIN PRIVATE_DEFINES */
 
-		  /* USER CODE END PRIVATE_DEFINES */
+/* USER CODE END PRIVATE_DEFINES */
 
-		  /**
-			* @}
-			*/
+/**
+  * @}
+  */
 
-			/** @defgroup USBD_STORAGE_Private_Macros
-			  * @brief Private macros.
-			  * @{
-			  */
+/** @defgroup USBD_STORAGE_Private_Macros
+  * @brief Private macros.
+  * @{
+  */
 
-			  /* USER CODE BEGIN PRIVATE_MACRO */
+/* USER CODE BEGIN PRIVATE_MACRO */
 
-			  /* USER CODE END PRIVATE_MACRO */
+/* USER CODE END PRIVATE_MACRO */
 
-			  /**
-				* @}
-				*/
+/**
+  * @}
+  */
 
-				/** @defgroup USBD_STORAGE_Private_Variables
-				  * @brief Private variables.
-				  * @{
-				  */
+/** @defgroup USBD_STORAGE_Private_Variables
+  * @brief Private variables.
+  * @{
+  */
 
-				  /* USER CODE BEGIN INQUIRY_DATA_HS */
-				  /** USB Mass storage Standard Inquiry Data. */
+/* USER CODE BEGIN INQUIRY_DATA_HS */
+									/** USB Mass storage Standard Inquiry Data. */
 const int8_t STORAGE_Inquirydata_HS[] = {/* 36 */
 
 	/* LUN 0 */
@@ -121,10 +123,10 @@ const int8_t STORAGE_Inquirydata_HS[] = {/* 36 */
   * @}
   */
 
-  /** @defgroup USBD_STORAGE_Exported_Variables
-	* @brief Public variables.
-	* @{
-	*/
+/** @defgroup USBD_STORAGE_Exported_Variables
+  * @brief Public variables.
+  * @{
+  */
 
 extern USBD_HandleTypeDef hUsbDeviceHS;
 
@@ -136,17 +138,17 @@ extern USBD_HandleTypeDef hUsbDeviceHS;
   * @}
   */
 
-  /** @defgroup USBD_STORAGE_Private_FunctionPrototypes
-	* @brief Private functions declaration.
-	* @{
-	*/
+/** @defgroup USBD_STORAGE_Private_FunctionPrototypes
+  * @brief Private functions declaration.
+  * @{
+  */
 
 static int8_t STORAGE_Init_HS(uint8_t lun);
-static int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t* block_num, uint16_t* block_size);
+static int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t *block_num, uint16_t *block_size);
 static int8_t STORAGE_IsReady_HS(uint8_t lun);
 static int8_t STORAGE_IsWriteProtected_HS(uint8_t lun);
-static int8_t STORAGE_Read_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t blk_len);
-static int8_t STORAGE_Write_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t blk_len);
+static int8_t STORAGE_Read_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len);
+static int8_t STORAGE_Write_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len);
 static int8_t STORAGE_GetMaxLun_HS(void);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
@@ -166,7 +168,7 @@ USBD_StorageTypeDef USBD_Storage_Interface_fops_HS =
   STORAGE_Read_HS,
   STORAGE_Write_HS,
   STORAGE_GetMaxLun_HS,
-  (int8_t*)STORAGE_Inquirydata_HS
+  (int8_t *)STORAGE_Inquirydata_HS
 };
 
 /* Private functions ---------------------------------------------------------*/
@@ -178,12 +180,13 @@ USBD_StorageTypeDef USBD_Storage_Interface_fops_HS =
   */
 int8_t STORAGE_Init_HS(uint8_t lun)
 {
-	/* USER CODE BEGIN 9 */
-	// UNUSED(lun);
-	// return (USBD_OK);
-	SD_Driver.disk_initialize(lun);
+  /* USER CODE BEGIN 9 */
+	  // UNUSED(lun);
+	  // return (USBD_OK);
+	  // CZ_LOG("USB mount SD: [%d]\r\n", lun);
+	// SD_Driver.disk_initialize(lun);
 	return (USBD_OK);
-	/* USER CODE END 9 */
+  /* USER CODE END 9 */
 }
 
 /**
@@ -193,13 +196,13 @@ int8_t STORAGE_Init_HS(uint8_t lun)
   * @param  block_size: Block size.
   * @retval USBD_OK if all operations are OK else USBD_FAIL
   */
-int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t* block_num, uint16_t* block_size)
+int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
-	/* USER CODE BEGIN 10 */
-	//   UNUSED(lun);
-	// *block_num  = STORAGE_BLK_NBR;
-	// *block_size = STORAGE_BLK_SIZ;
-	// return (USBD_OK);
+  /* USER CODE BEGIN 10 */
+	  //   UNUSED(lun);
+	  // *block_num  = STORAGE_BLK_NBR;
+	  // *block_size = STORAGE_BLK_SIZ;
+	  // return (USBD_OK);
 	HAL_SD_CardInfoTypeDef info;
 	if (HAL_SD_GetCardState(&hsd) == HAL_SD_CARD_TRANSFER) {
 		HAL_SD_GetCardInfo(&hsd, &info);
@@ -208,7 +211,7 @@ int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t* block_num, uint16_t* block_
 		return  USBD_OK;
 	}
 	return  USBD_FAIL;
-	/* USER CODE END 10 */
+  /* USER CODE END 10 */
 }
 
 /**
@@ -218,11 +221,14 @@ int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t* block_num, uint16_t* block_
   */
 int8_t STORAGE_IsReady_HS(uint8_t lun)
 {
-	/* USER CODE BEGIN 11 */
-	// UNUSED(lun);
-	// return (USBD_OK);
+  /* USER CODE BEGIN 11 */
+	  // UNUSED(lun);
+#ifdef USE_FATFS_UNOS // 调用FatFs的函数时必须是裸机，否则当连接USB时任务调度有FatFs的函数时可能冲突
 	return (SD_Driver.disk_status(lun));
-	/* USER CODE END 11 */
+#else
+	return (USBD_OK);
+#endif
+  /* USER CODE END 11 */
 }
 
 /**
@@ -232,9 +238,9 @@ int8_t STORAGE_IsReady_HS(uint8_t lun)
   */
 int8_t STORAGE_IsWriteProtected_HS(uint8_t lun)
 {
-	/* USER CODE BEGIN 12 */
+  /* USER CODE BEGIN 12 */
 	return (USBD_OK);
-	/* USER CODE END 12 */
+  /* USER CODE END 12 */
 }
 
 /**
@@ -245,15 +251,15 @@ int8_t STORAGE_IsWriteProtected_HS(uint8_t lun)
   * @param  blk_len: Blocks number.
   * @retval USBD_OK if all operations are OK else USBD_FAIL
   */
-int8_t STORAGE_Read_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t blk_len)
+int8_t STORAGE_Read_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-	/* USER CODE BEGIN 13 */
-	// UNUSED(lun);
-	// UNUSED(buf);
-	// UNUSED(blk_addr);
-	// UNUSED(blk_len);
-	// return (USBD_OK);
-#ifdef USE_FATFS
+  /* USER CODE BEGIN 13 */
+	  // UNUSED(lun);
+	  // UNUSED(buf);
+	  // UNUSED(blk_addr);
+	  // UNUSED(blk_len);
+	  // return (USBD_OK);
+#ifdef USE_FATFS_UNOS
 	return (SD_Driver.disk_read(lun, buf, blk_addr, blk_len));
 #else
 	int8_t ret = USBD_FAIL;
@@ -264,7 +270,7 @@ int8_t STORAGE_Read_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t bl
 	}
 	return ret;
 #endif
-	/* USER CODE END 13 */
+  /* USER CODE END 13 */
 }
 
 /**
@@ -275,15 +281,15 @@ int8_t STORAGE_Read_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t bl
   * @param  blk_len: Blocks number.
   * @retval USBD_OK if all operations are OK else USBD_FAIL
   */
-int8_t STORAGE_Write_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t blk_len)
+int8_t STORAGE_Write_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-	/* USER CODE BEGIN 14 */
-	// UNUSED(lun);
-	// UNUSED(buf);
-	// UNUSED(blk_addr);
-	// UNUSED(blk_len);
-	// return (USBD_OK);
-#ifdef USE_FATFS
+  /* USER CODE BEGIN 14 */
+	  // UNUSED(lun);
+	  // UNUSED(buf);
+	  // UNUSED(blk_addr);
+	  // UNUSED(blk_len);
+	  // return (USBD_OK);
+#ifdef USE_FATFS_UNOS
 	return (SD_Driver.disk_write(lun, buf, blk_addr, blk_len));
 #else
 	int8_t ret = USBD_FAIL;
@@ -294,7 +300,7 @@ int8_t STORAGE_Write_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t b
 	}
 	return ret;
 #endif
-	/* USER CODE END 14 */
+  /* USER CODE END 14 */
 }
 
 /**
@@ -304,9 +310,9 @@ int8_t STORAGE_Write_HS(uint8_t lun, uint8_t* buf, uint32_t blk_addr, uint16_t b
   */
 int8_t STORAGE_GetMaxLun_HS(void)
 {
-	/* USER CODE BEGIN 15 */
+  /* USER CODE BEGIN 15 */
 	return (STORAGE_LUN_NBR - 1);
-	/* USER CODE END 15 */
+  /* USER CODE END 15 */
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
@@ -317,7 +323,7 @@ int8_t STORAGE_GetMaxLun_HS(void)
   * @}
   */
 
-  /**
-	* @}
-	*/
+/**
+  * @}
+  */
 

@@ -10,6 +10,7 @@
 #include "ctype.h"
 
 #include "cz_log.h"
+#include "delay.h"
 #include "cmsis_os2.h"
 
 // 定义内存块大小和内存池中的块数

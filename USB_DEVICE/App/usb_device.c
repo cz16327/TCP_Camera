@@ -27,7 +27,8 @@
 #include "usbd_storage_if.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "main.h"
+#include "gpio.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN PV */
@@ -64,7 +65,11 @@ USBD_HandleTypeDef hUsbDeviceHS;
 void MX_USB_DEVICE_Init(void)
 {
   /* USER CODE BEGIN USB_DEVICE_Init_PreTreatment */
-
+  // 模拟USB拔插，防止USB供电时，Windows枚举失败
+  USB_DIS;
+  delay_ms(500);
+  USB_EN;
+  delay_ms(500);
   /* USER CODE END USB_DEVICE_Init_PreTreatment */
 
   /* Init Device Library, add supported class and start the library. */
