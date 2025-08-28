@@ -214,8 +214,7 @@ void rtc_time_set(unsigned char* time)
 {
 	RTC_TimeTypeDef time_s; //time
 	RTC_DateTypeDef date_s; //date
-
-	date_s.WeekDay = 0; //这里必须要设置星期，否则读取年份不对
+	date_s.WeekDay = 0; // 这里必须要设置星期，否则读取年份不对
 	date_s.Year = time[1];
 	date_s.Month = time[2];
 	date_s.Date = time[3];
@@ -224,7 +223,6 @@ void rtc_time_set(unsigned char* time)
 	time_s.Seconds = time[6];
 	time_s.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	time_s.StoreOperation = RTC_STOREOPERATION_RESET;
-
 	HAL_RTC_SetDate(&hrtc, &date_s, RTC_FORMAT_BIN);
 	HAL_RTC_SetTime(&hrtc, &time_s, RTC_FORMAT_BIN);
 }
@@ -236,12 +234,10 @@ void rtc_time_get(unsigned char* time)
 {
 	RTC_TimeTypeDef time_s; //time
 	RTC_DateTypeDef date_s; //date
-
 	/* Get the RTC current Time */
 	HAL_RTC_GetTime(&hrtc, &time_s, RTC_FORMAT_BIN);
 	/* Get the RTC current Date */
 	HAL_RTC_GetDate(&hrtc, &date_s, RTC_FORMAT_BIN);
-
 	time[0] = 20;
 	time[1] = date_s.Year;
 	time[2] = date_s.Month;

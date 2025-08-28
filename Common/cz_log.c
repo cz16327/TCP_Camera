@@ -28,7 +28,6 @@ unsigned char* cz_get_time_string(void)
 {
 	static unsigned char t[20];
 	unsigned char time[7] = { 0 };
-
 	rtc_time_get(time);
 	memset(t, 0, sizeof(t));
 	sprintf((char *)t, "%02d%02d-%02d-%02d %02d:%02d:%02d", \

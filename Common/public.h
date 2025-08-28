@@ -12,6 +12,7 @@
 #include "cz_log.h"
 #include "delay.h"
 #include "cmsis_os2.h"
+#include "cz_sysInfo.h"
 
 // 定义内存块大小和内存池中的块数
 #define MEMORY_BLOCK_SIZE	512
@@ -32,6 +33,7 @@ typedef enum Ret_Status_def
 } Ret_Status_e;
 
 osSemaphoreId_t get_atAck_semap(void);
+osSemaphoreId_t get_adcSwitch_semap(void);
 osMemoryPoolId_t get_memoryPoolId_t(void);
 
 #endif

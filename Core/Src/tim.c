@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "adc.h"
+#include "gpio.h"
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim2;
@@ -189,7 +190,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
     __HAL_RCC_TIM2_CLK_ENABLE();
 
     /* TIM2 interrupt Init */
-    HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(TIM2_IRQn, 8, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
   /* USER CODE BEGIN TIM2_MspInit 1 */
 
@@ -328,10 +329,12 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 void tim_vbat_adc_enable(Able_e enable)
 {
 	if (enable) {
-		__HAL_TIM_SetCounter(&htim2, 0);
+		VBAT_ADC_EN;
 		HAL_ADC_Start(&hadc1);	//启动ADC转换
+		__HAL_TIM_SetCounter(&htim2, 0);
 		HAL_TIM_Base_Start_IT(&htim2);
 	} else {
+		VBAT_ADC_DIS;
 		HAL_TIM_Base_Stop_IT(&htim2);
 		__HAL_TIM_SetCounter(&htim2, 0);
 		HAL_ADC_Stop(&hadc1);	//关闭ADC转换

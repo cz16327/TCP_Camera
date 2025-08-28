@@ -11,10 +11,9 @@
                 "_UNICODE",
                 "USE_HAL_DRIVER",
                 "STM32F407xx",
-				// "CM_BACKTRACE",
-				"USE_FATFS"
+                "USE_FATFS"
             ],
-            "compilerPath": "C:/MinGW/bin/gcc.exe",
+            "compilerPath": "D:/MinGW/15.2.0/mingw64/bin/gcc.exe",
             "cStandard": "c17",
             "cppStandard": "gnu++14",
             "intelliSenseMode": "windows-gcc-x64"

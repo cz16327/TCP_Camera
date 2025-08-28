@@ -104,7 +104,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-//   MX_IWDG_Init();
+  MX_IWDG_Init();
   MX_SDIO_SD_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
@@ -119,7 +119,7 @@ int main(void)
   MX_RTC_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-	delay_init();
+  CZ_RAW("Hello TCP Camera!\r\n");
 #ifdef CM_BACKTRACE
 	cm_backtrace_init(APPNAME, HARDWARE_VERSION, SOFTWARE_VERSION);
 #endif
@@ -219,7 +219,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 	if (htim->Instance == TIM2) {
 		SysInfo_t* sysInfo = get_sysInfo_t();
-		vbat_get(&sysInfo->vbat);
+		vbat_get(sysInfo);
 		// IWDG_Feed();
 	}
   /* USER CODE END Callback 1 */

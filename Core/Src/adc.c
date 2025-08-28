@@ -129,20 +129,21 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 
 /// @brief 获取电池电压
 /// @param Value 存储
-void vbat_get(float *Value)
+/// PS: 非连续转换，读前开，读后关
+void vbat_get(SysInfo_t* sysInfo)
 {
 	unsigned int ADC_Value = 0;
 	float ADC_VCC = 0;
-	// HAL_ADC_Start(&hadc1);	//启动ADC转换
+	HAL_ADC_Start(&hadc1);	// 启动ADC转换
 	HAL_ADC_PollForConversion(&hadc1, WAIT_TIME);	//等待转换完成，WAIT_TIME 为最大等待时间，单位为ms
 
 	if (HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)) {
 		ADC_Value = HAL_ADC_GetValue(&hadc1);	//获取AD值
 		ADC_VCC = ADC_Value * VREF_VCC / RES_PER;
-		// CZ_LOG("ADC1 Reading : %d\r\n", ADC_Value);
-		// CZ_LOG("VBAT : %.2f V\r\n", ADC_VCC);
+		CZ_LOG("ADC1 Reading : %d\r\n", ADC_Value);
+		CZ_LOG("VBAT : %.2f V\r\n", ADC_VCC);
 	}
-	// HAL_ADC_Stop(&hadc1);	//关闭ADC转换
-	*Value = ADC_VCC;
+	HAL_ADC_Stop(&hadc1);	// 关闭ADC转换
+	sysInfo->vbat = ADC_VCC;
 }
 /* USER CODE END 1 */

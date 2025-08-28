@@ -43,7 +43,7 @@ extern ADC_HandleTypeDef hadc1;
 void MX_ADC1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void vbat_get(float *Value);
+void vbat_get(SysInfo_t* sysInfo);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

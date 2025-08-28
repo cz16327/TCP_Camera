@@ -22,7 +22,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "tim.h"
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -160,22 +160,18 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 2 */
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == BUTTON1_Pin)
 		if (BOTTON1_GET == GPIO_PIN_RESET) {
 			CZ_LOG("BOTTON 1 get\r\n");
+			tim_vbat_adc_enable(CZ_ENABLE);
 		}
 
 	if (GPIO_Pin == BUTTON2_Pin)
 		if (BOTTON2_GET == GPIO_PIN_RESET) {
 			CZ_LOG("BOTTON 2 get\r\n");
-		}
-	
-	if (GPIO_Pin == SD_CD_Pin)
-		if (BOTTON2_GET == GPIO_PIN_RESET) {
-			CZ_LOG("SD get\r\n");
+			tim_vbat_adc_enable(CZ_DISABLE);
 		}
 }
 /* USER CODE END 2 */
