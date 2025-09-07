@@ -1,5 +1,6 @@
 #include "wifi_at.h"
 #include "wifi_data.h"
+#include "public.h"
 
 extern UART_HandleTypeDef USARTx;
 
@@ -17,7 +18,7 @@ AT_t* get_AT_t(void)
 /// @brief 删除 AT 指令最后的逗号
 /// @param cmd 指令内容
 /// @param len 指令长度
-static void delete_cmd_last_comma(unsigned char *cmd, unsigned int *len)
+static void delete_cmd_last_comma(unsigned char* cmd, unsigned int* len)
 {
 	if (*len < 3) {
 		CZ_ERR("AT cmd error len < 3 \r\n");
@@ -52,12 +53,12 @@ Ret_Status_e atcmd_send(unsigned char* cmd, unsigned int len, const char* expect
 	CZ_LOG("%d[%d] %s\r\n", strlen((const char*)cmd), len, cmd);
 	HAL_UART_Transmit_DMA(&USARTx, cmd, len);
 	while (USARTx.gState != HAL_UART_STATE_READY) {
-        if ((HAL_GetTick() - timeout) > WAIT_USART_DMA) {
-            CZ_ERR("USART DMA send timeout\r\n");
-            ret = CZ_BUSY;
-            goto EXIT;
-        }
-    }
+		if ((HAL_GetTick() - timeout) > WAIT_USART_DMA) {
+			CZ_ERR("USART DMA send timeout\r\n");
+			ret = CZ_BUSY;
+			goto EXIT;
+		}
+	}
 	if (timeoutS) {
 		while (ret != CZ_OK) {
 			ret = analytic_ack(expect);
@@ -197,7 +198,7 @@ static Ret_Status_e mcu_sysMsgCfg(At_type_e type, SysMsg_mode_e mode, Mask_e mas
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_sysMsg, timeoutS);
 	} else if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+SYSMSG=%d,%08x,%d\r\n", mode, mask, saveFlash);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -252,7 +253,7 @@ static Ret_Status_e mcu_sleep(At_type_e type, Sleep_mode_e mode, Wakeup_source_e
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[30];
+		unsigned char Set_cmd[30] = { 0 };
 		sprintf((char*)Set_cmd, "AT+SLEEP=%d,%d,%d,%d\r\n", mode, wake, ms_pin, level);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -279,7 +280,7 @@ static Ret_Status_e mcu_uartCfg(At_type_e type, unsigned int baudrate, Uart_data
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_uartCfg, timeoutS);
 	} else if (type == Set) { // Set
-		unsigned char Set_cmd[30];
+		unsigned char Set_cmd[30] = { 0 };
 		sprintf((char*)Set_cmd, "AT+UARTCFG=%d,%d,%d,%d\r\n", baudrate, databits, stopbits, parity);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -303,7 +304,7 @@ static Ret_Status_e mcu_uartFlowCfg(At_type_e type, Uart_flow_e flowcontrol, uns
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_uartFlowCfg, timeoutS);
 	} else if (type == Set) { // Set
-		unsigned char Set_cmd[30];
+		unsigned char Set_cmd[30] = { 0 };
 		sprintf((char*)Set_cmd, "AT+UARTFLOWCONTROL=%d\r\n", flowcontrol);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -323,7 +324,7 @@ static Ret_Status_e mcu_download(At_type_e type, Download_mode_e mode, unsigned 
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[30];
+		unsigned char Set_cmd[30] = { 0 };
 		sprintf((char*)Set_cmd, "AT+SETDOWNLOADMODE=%d\r\n", mode);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -354,7 +355,7 @@ static Ret_Status_e mcu_ota(At_type_e type, OTA_mode_e mode, unsigned char* Host
 			Host_name = "";
 		if (!Route)
 			Route = "";
-		unsigned char Set_cmd[strlen((const char*)Host_name) + strlen((const char*)Route) + 20];
+		unsigned char Set_cmd[500] = { 0 };
 		sprintf((char*)Set_cmd, "AT+OTA=%d,%s,%d,%s\r\n", mode, Host_name, Port, Route);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -382,7 +383,7 @@ static Ret_Status_e mcu_tickless(At_type_e type, unsigned char tickless, unsigne
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_tickless, timeoutS);
 	} else if (type == Set) { // Set
-		unsigned char Set_cmd[20];
+		unsigned char Set_cmd[20] = { 0 };
 		sprintf((char*)Set_cmd, "AT+OTA=%d\r\n", tickless);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -410,7 +411,7 @@ static Ret_Status_e io_map(At_type_e type, unsigned char PinNumber, unsigned cha
 		if (!pinx_list)
 			pinx_list = "";
 		// BW16 默认映射 AT+SYSIOMAP=16,21,34,NC,23,NC,26,29,NC,NC,30,NC,22,27,20,NC,NC
-		unsigned char Set_cmd[strlen((const char*)pinx_list) + 20];
+		unsigned char Set_cmd[100] = { 0 };
 		sprintf((char*)Set_cmd, "AT+SYSIOMAP=%d,%s\r\n", PinNumber, pinx_list);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -431,7 +432,7 @@ static Ret_Status_e io_write(At_type_e type, unsigned char pin, IO_level_e level
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+SYSGPIOWRITE=%d,%d\r\n", pin, level);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -451,7 +452,7 @@ static Ret_Status_e io_read(At_type_e type, unsigned char pin, unsigned int time
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+SYSGPIOREAD=%d\r\n", pin);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_ioRead, timeoutS);
@@ -475,7 +476,7 @@ static Ret_Status_e io_pwmCfgUs(At_type_e type, unsigned char pin, unsigned int 
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+PWMCFG=%d,%d,%d\r\n", pin, cycle, duty);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -497,7 +498,7 @@ static Ret_Status_e io_pwmCfgPer(At_type_e type, unsigned char pin, unsigned int
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+PWMCFGS=%d,%d,%d\r\n", pin, cycle, duty);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -517,7 +518,7 @@ static Ret_Status_e io_pwmStop(At_type_e type, unsigned char pin, unsigned int t
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+PWMSTOP=%d\r\n", pin);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -540,7 +541,7 @@ static Ret_Status_e io_pwmSetDutyUs(At_type_e type, unsigned char pin, unsigned 
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+PWMDUTYSET=%d,%d\r\n", pin, duty);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -560,7 +561,7 @@ static Ret_Status_e io_pwmSetDutyPer(At_type_e type, unsigned char pin, unsigned
 	Ret_Status_e ret = CZ_ERROR;
 	AT_Ack_t* ack = get_Ack_t();
 	if (type == Set) { // Set
-		unsigned char Set_cmd[25];
+		unsigned char Set_cmd[25] = { 0 };
 		sprintf((char*)Set_cmd, "AT+PWMDUTYSETS=%d,%d\r\n", pin, duty);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -585,7 +586,7 @@ static Ret_Status_e wifi_mode(At_type_e type, Wifi_mode_e mode, Save_e saveFlash
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
 		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiMode, timeoutS);
 	} else if (type == Set) { // Set
-		unsigned char Set_cmd[20];
+		unsigned char Set_cmd[20] = { 0 };
 		if (mode == UNINIT_MODE)
 			saveFlash = UNSAVE;
 		sprintf((char*)Set_cmd, "AT+WMODE=%d,%d\r\n", mode, saveFlash);
@@ -636,7 +637,7 @@ static Ret_Status_e wifi_scan(At_type_e type, unsigned char* ssid, unsigned char
 			ssid = "";
 		if (!mac)
 			mac = "";
-		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)mac) + 30];
+		unsigned char Set_cmd[200] = { 0 };
 		sprintf((char*)Set_cmd, "AT+WSCAN=%s,%s,%d,%d\r\n", ssid, mac, channel, rssi);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiScan, timeoutS);
@@ -658,7 +659,7 @@ static Ret_Status_e wifi_scanActive(At_type_e type, unsigned char* ssid, unsigne
 	if (type == Set) { // Set
 		if (!ssid)
 			ssid = "";
-		unsigned char Set_cmd[strlen((const char*)ssid) + 20];
+		unsigned char Set_cmd[100] = { 0 };
 		sprintf((char*)Set_cmd, "AT+WSCANACTIVE=%s\r\n", ssid);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiScanActive, timeoutS);
@@ -691,7 +692,7 @@ static Ret_Status_e wifi_staDhcp(At_type_e type, IP_mode_e mode, unsigned char* 
 			mask = "";
 		if (!gateway)
 			gateway = "";
-		unsigned char Set_cmd[strlen((const char*)ip) + strlen((const char*)mask) + strlen((const char*)gateway) + 30];
+		unsigned char Set_cmd[200] = { 0 };
 		sprintf((char*)Set_cmd, "AT+WSDHCP=%d,%s,%s,%s\r\n", mode, ip, mask, gateway);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -724,7 +725,7 @@ static Ret_Status_e wifi_connect(At_type_e type, unsigned char* ssid, unsigned c
 			pwd = "";
 		if (!bssid)
 			bssid = "";
-		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)pwd) + strlen((const char*)bssid) + 20];
+		unsigned char Set_cmd[200] = { 0 };
 		sprintf((char*)Set_cmd, "AT+WJAP=%s,%s,%s\r\n", ssid, pwd, bssid);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -771,10 +772,10 @@ static Ret_Status_e wifi_companyAP(At_type_e type, EAP_type_e EAPtype, unsigned 
 			identity = "";
 		if (!pwd)
 			pwd = "";
-		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)identity) + strlen((const char*)pwd) + 20];
+		unsigned char Set_cmd[200] = { 0 };
 		sprintf((char*)Set_cmd, "AT+WJEAP=%d,%s,%s,%s\r\n", EAPtype, ssid, identity, pwd);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
-		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiEAP, timeoutS);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiJEAP, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
 	return ret;
@@ -782,7 +783,7 @@ static Ret_Status_e wifi_companyAP(At_type_e type, EAP_type_e EAPtype, unsigned 
 
 
 /// @brief 上电自动重连 wifi
-/// @param type 类型 Query
+/// @param type 类型 Query/Set
 /// @param enable 使失能
 /// @param ssid 连接的 AP 的 SSID
 /// @param pwd 连接密码
@@ -796,7 +797,7 @@ static Ret_Status_e wifi_autoConn(At_type_e type, BW_enable_e enable, unsigned c
 	if (type == Query) { // Query
 		unsigned char Query_cmd[] = "AT+WAUTOCONN?\r\n";
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
-		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_autoCon, timeoutS);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiAutoCon, timeoutS);
 	} else if (type == Set) { // Set
 		if (!ssid)
 			ssid = "";
@@ -804,7 +805,7 @@ static Ret_Status_e wifi_autoConn(At_type_e type, BW_enable_e enable, unsigned c
 			pwd = "";
 		if (!bssid)
 			bssid = "";
-		unsigned char Set_cmd[strlen((const char*)ssid) + strlen((const char*)pwd) + strlen((const char*)bssid) + 25];
+		unsigned char Set_cmd[200] = { 0 };
 		sprintf((char*)Set_cmd, "AT+WAUTOCONN=%d,%s,%s,%s\r\n", enable, ssid, pwd, bssid);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
@@ -815,7 +816,7 @@ static Ret_Status_e wifi_autoConn(At_type_e type, BW_enable_e enable, unsigned c
 
 
 /// @brief 查询或设置 AP 模式下 DHCP 参数
-/// @param type 类型 Query
+/// @param type 类型 Query/Set
 /// @param enable 使失能
 /// @param start_ip 起始 IP 地址
 /// @param end_ip 结束 IP 地址
@@ -837,10 +838,297 @@ static Ret_Status_e wifi_apDhcp(At_type_e type, BW_enable_e enable, unsigned cha
 			end_ip = "";
 		if (!gateway)
 			gateway = "";
-		unsigned char Set_cmd[strlen((const char*)start_ip) + strlen((const char*)end_ip) + strlen((const char*)gateway) + 25];
+		unsigned char Set_cmd[100] = { 0 };
 		sprintf((char*)Set_cmd, "AT+WAUTOCONN=%d,%s,%s,%s\r\n", enable, start_ip, end_ip, gateway);
 		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
 		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 查询/设置 AP 参数信息(这个是从硬件获取的当前状态，不是直接读取我们的设置值)
+/// @param type 类型 Query/Set
+/// @param ssid 连接的 AP 的 SSID
+/// @param pwd 连接密码
+/// @param channel 通道
+/// @param maxConn 最大连接数不填默认3
+/// @param ssidHidden 是否隐藏 SSID 0-不隐藏 1-隐藏
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_ap(At_type_e type, unsigned char* ssid, unsigned char* pwd, unsigned short channel, unsigned char maxConn, BW_enable_e ssidHidden, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+WAP?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiAp, timeoutS);
+	} else if (type == Set) { // Set
+		if (!ssid)
+			ssid = "";
+		if (!pwd)
+			pwd = "";
+		if (!maxConn)
+			maxConn = 3; // 不写默认是3
+		unsigned char Set_cmd[100] = { 0 };
+		sprintf((char*)Set_cmd, "AT+WAP=%s,%s,%d,%d,%d\r\n", ssid, pwd, channel, maxConn, ssidHidden);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 进行PING操作
+/// @param type 类型 Set
+/// @param addr 目标地址（IP 或域名）
+/// @param count 发送次数，默认是3
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_ping(At_type_e type, unsigned char* addr, unsigned char count, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Set) { // Set
+		if (!addr)
+			addr = "";
+		if (!count)
+			count = 3; // 不写默认是3
+		unsigned char Set_cmd[40] = { 0 };
+		sprintf((char*)Set_cmd, "AT+PING=%s,%d\r\n", addr, count);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiPing, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 查询/修改 wifi station MAC 地址
+/// @param type 类型 Query/Set
+/// @param mac MAC 地址
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_cipStaMacDef(At_type_e type, unsigned char* mac, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+CIPSTAMAC_DEF?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiCipStaMacDef, timeoutS);
+	} else if (type == Set) { // Set
+		if (!mac)
+			mac = "cz20160327cz";
+		unsigned char Set_cmd[40] = { 0 };
+		sprintf((char*)Set_cmd, "AT+CIPSTAMAC_DEF=%s\r\n", mac);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 查询/设置 WiFi 国家码
+/// @param type 类型 Query/Set
+/// @param country_code 国家码
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_country(At_type_e type, Country_Code_e country_code, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+WCOUNTRY?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiCountry, timeoutS);
+	} else if (type == Set) { // Set
+		unsigned char Set_cmd[20] = { 0 };
+		sprintf((char*)Set_cmd, "AT+WCOUNTRY=%d\r\n", country_code);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 查询/设置手机配网
+/// @param type 类型 Query/Set
+/// @param status 手机配网状态
+/// @param name 来自定义配网广播名称的，当前仅 esp BluFi 协议支持该参数
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_config(At_type_e type, Wifi_Cfg_e status, unsigned char* name, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+WCONFIG?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiConfig, timeoutS);
+	} else if (type == Set) { // Set
+		if (!name)
+			name = "";
+		unsigned char Set_cmd[50] = { 0 };
+		if (strcmp((const char*)name, ""))
+			sprintf((char*)Set_cmd, "AT+WCONFIG=%d,%s\r\n", status, name);
+		else
+			sprintf((char*)Set_cmd, "AT+WCONFIG=%d\r\n", status);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 筛选 WIFI 扫描显示信息
+/// @param type 类型 Query/Set
+/// @param option 选项 Wifi_ScanOpt_e
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_scanOpt(At_type_e type, unsigned char option, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+WSCANOPT?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiScanOpt, timeoutS);
+	} else if (type == Set) { // Set
+		unsigned char Set_cmd[20] = { 0 };
+		sprintf((char*)Set_cmd, "AT+WSCANOPT=%d\r\n", option);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 查询 wifi 连接信号强度
+/// @param type 类型 Query
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_rssi(At_type_e type, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+WRSSI?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiRssi, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 发送蓝牙配网自定义数据
+/// @param type 类型 Set
+/// @param len 最大透传数据长度
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_blufiSend(At_type_e type, unsigned int len, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Set) { // Set
+		unsigned char Set_cmd[20] = { 0 };
+		sprintf((char*)Set_cmd, "AT+BLUFISEND=%d\r\n", len);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiSeriaNet, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 创建 socket 连接（文档新增AT+SOCKET2已完善keep_alive功能，目前暂时不用）
+/// @param type 类型 Query/Set
+/// @param mode socket 类型
+/// @param remote_host 目标服务器IP
+/// @param port 端口
+/// @param keep_alive 保活时间（s）预留功能，官方暂时没有实现
+/// @param conID 指定新连接的 ConID
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_socket(At_type_e type, Socket_Mode_e mode, unsigned char* remote_host, unsigned char* port, unsigned int keep_alive, unsigned int conID, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+SOCKET?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_OK, timeoutS);
+	} else if (type == Set) { // Set
+		unsigned char temp_cmd[50] = { 0 };
+		unsigned char Set_cmd[10 + sizeof(temp_cmd)] = { 0 };
+		if (!port) {
+			port = "";
+			CZ_ERR("port is NULL\r\n");
+		}
+		if (mode == UDP_CLIENT || mode == TCP_CLIENT || mode == SSL_CLIENT) {
+			if (!remote_host) {
+				remote_host = "";
+				CZ_ERR("remote host is NULL\r\n");
+			}
+			sprintf((char*)temp_cmd, "%d,%s,%s,%d,%d\n", mode, remote_host, port, 0, conID);
+		} else {
+			sprintf((char*)temp_cmd, "%d,%s\n", mode, port);
+		}
+		sprintf((char*)Set_cmd, "AT+SOCKET=%s\n", temp_cmd);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 通过 socket 发送数据(长数据模式)
+/// @param type 类型 Set
+/// @param conID 指定连接的 ConID
+/// @param len 最大透传数据长度
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_socketSend(At_type_e type, unsigned int conID, unsigned int len, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Set) { // Set
+		unsigned char Set_cmd[50] = { 0 };
+		sprintf((char*)Set_cmd, "AT+SOCKETSEND=%d,%d\r\n", conID, len);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiSeriaNet, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
+/// @brief 通过 socket 发送数据(单行模式)
+/// @param type 类型 Set
+/// @param conID 指定连接的 ConID
+/// @param len 最大透传数据长度
+/// @param data 数据内容
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_socketSendLine(At_type_e type, unsigned int conID, unsigned int len, unsigned char* data, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Set) { // Set
+		unsigned char Set_cmd[50 + MAX_LINE_DATALEN] = { 0 };
+		if (len > MAX_LINE_DATALEN);
+		sprintf((char*)Set_cmd, "AT+SOCKETSENDLINE=%d,%d\r\n", conID, len);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_wifiSeriaNet, timeoutS);
 	}
 	//CZ_RAW("%d\r\n", ret);
 	return ret;
@@ -886,4 +1174,88 @@ static AT_t g_AT_t = {
 	.Wifi.Basic.at_wJeap = wifi_companyAP,
 	.Wifi.Basic.at_wAutoConn = wifi_autoConn,
 	.Wifi.Basic.at_wApDhcp = wifi_apDhcp,
+	// .Wifi.Basic.at_wAp = wifi_ap,
+	.Wifi.Basic.at_wApInfo = wifi_ap,
+	.Wifi.Basic.at_ping = wifi_ping,
+	.Wifi.Basic.at_cipStaMac_Def = wifi_cipStaMacDef,
+	.Wifi.Basic.at_wCountry = wifi_country,
+	.Wifi.Basic.at_wConfig = wifi_config,
+	.Wifi.Basic.at_wScanOpt = wifi_scanOpt,
+	.Wifi.Basic.at_wRssi = wifi_rssi,
+	.Wifi.Basic.at_blufiSend = wifi_blufiSend,
+
+	// WIFI TCP/IP指令
+	.Wifi.TcpIp.at_socket = wifi_socket,
+	// .Wifi.TcpIp.at_socket2 = wifi_socket,
+	.Wifi.TcpIp.at_socketSend = wifi_socketSend,
+	.Wifi.TcpIp.at_socketSendLine = wifi_socketSendLine,
+	.Wifi.TcpIp.at_socketSendHex = NULL,
+	.Wifi.TcpIp.at_socketRead = NULL,
+	.Wifi.TcpIp.at_socketDel = NULL,
+	.Wifi.TcpIp.at_socketRecvCfg = NULL,
+	.Wifi.TcpIp.at_socketTt = NULL,
+	.Wifi.TcpIp.at_socketAutoTt = NULL,
+	.Wifi.TcpIp.at_sslCret = NULL,
+	.Wifi.TcpIp.at_wDomain = NULL,
+	.Wifi.TcpIp.at_wDns = NULL,
+
+	// WIFI MQTT指令
+	.Wifi.Mqtt.at_mqtt = NULL,
+	.Wifi.Mqtt.at_mqttVer = NULL,
+	.Wifi.Mqtt.at_mqttBuf = NULL,
+	.Wifi.Mqtt.at_mqttKeepAlive = NULL,
+	.Wifi.Mqtt.at_mqttCret = NULL,
+	.Wifi.Mqtt.at_mqttDisconn = NULL,
+	.Wifi.Mqtt.at_mqttPub = NULL,
+	.Wifi.Mqtt.at_mqttPubRaw = NULL,
+	.Wifi.Mqtt.at_mqttSub = NULL,
+	.Wifi.Mqtt.at_mqttUnsub = NULL,
+
+	// WIFI HTTP指令
+	.Wifi.Http.at_httpClientLine = NULL,
+	.Wifi.Http.at_httpRaw = NULL,
+
+	// WIFI SNTP指令
+	.Wifi.Sntp.at_sntpTime = NULL,
+	.Wifi.Sntp.at_sntpTimeCfg = NULL,
+	.Wifi.Sntp.at_sntpIntv = NULL,
+
+	// 蓝牙 基础指令
+	.Ble.Basic.at_bleMac = NULL,
+	.Ble.Basic.at_bleMode = NULL,
+	.Ble.Basic.at_bleRfPwr = NULL,
+	.Ble.Basic.at_bleState = NULL,
+	.Ble.Basic.at_bleDiscon = NULL,
+	.Ble.Basic.at_bleMtu = NULL,
+	.Ble.Basic.at_bleSend = NULL,
+	.Ble.Basic.at_bleSendRaw = NULL,
+	.Ble.Basic.at_bleSerUuid = NULL,
+	.Ble.Basic.at_bleTxUuid = NULL,
+	.Ble.Basic.at_bleRxUuid = NULL,
+	.Ble.Basic.at_transEnter = NULL,
+
+	// 蓝牙 从机指令
+	.Ble.Slave.at_bleName = NULL,
+	.Ble.Slave.at_bleConIntv = NULL,
+	.Ble.Slave.at_bleAuth = NULL,
+	.Ble.Slave.at_bleAdvIntv = NULL,
+	.Ble.Slave.at_bleAdvData = NULL,
+	.Ble.Slave.at_bleAdvEn = NULL,
+
+	// 蓝牙 主机指令
+	.Ble.Master.at_bleScan = NULL,
+	.Ble.Master.at_bleConnect = NULL,
+	.Ble.Master.at_bleAutoCon = NULL,
+	.Ble.Master.at_bleDisAutoCon = NULL,
+
+	// 蓝牙 信标指令
+	.Ble.iBeacon.at_bleIbecnUuid = NULL,
+	.Ble.iBeacon.at_bleIbecnData = NULL,
+
+	// 蓝牙 MESH指令
+	.Ble.Mesh.at_proVision = NULL,
+	.Ble.Mesh.at_meshSend = NULL,
+	.Ble.Mesh.at_meshAddr = NULL,
+	.Ble.Mesh.at_meshState = NULL,
+
 };

@@ -3,9 +3,10 @@
 
 #include "main.h"
 
-#define USARTx	huart2
-#define WAIT_USART_DMA (500)	// 等待DMA发送完成的时间
-#define WAIT_MS	(1000)
+#define USARTx				huart2
+#define WAIT_USART_DMA 		(500)	// 等待DMA发送完成的时间
+#define WAIT_MS				(1000)
+#define MAX_LINE_DATALEN	(1024)	// 单次透传最大数据长度
 
 /***** 执行方式枚举体 *****/
 typedef enum At_type_def
@@ -156,6 +157,61 @@ typedef enum EAP_type_def
 	FAST		// FAST 加密方式
 } EAP_type_e;
 
+/********** 国家代码 **********/
+typedef enum Country_Code_def
+{
+	DEF,	// 使用默认国家代码
+	JP,		// 日本
+	AS,		// 美属萨摩亚
+	CA,		// 加拿大
+	US,		// 美国
+	CN,		// 中国
+	HK,		// 中国香港
+	TW,		// 中国台湾
+	MO,		// 中国澳门
+	IL,		// 以色列
+	SG,		// 新加坡
+	KR,		// 韩国
+	TR,		// 土耳其
+	AU,		// 澳大利亚
+	ZA,		// 南非
+	BR		// 巴西
+} Country_Code_e;
+
+/********** WIFI配网操作 **********/
+typedef enum Wifi_Cfg_def
+{
+	OFF_CFG = 0,			// 关闭手机配网任务
+	ONCE_WIFI_CFG = 1,		// 开启一次 wifi 配网(配网成功/配网超时会自动返回关闭状态)
+	ONCE_BT_CFG = 2,		// 开启一次蓝牙配网(配网成功/配网超时会自动返回关闭状态)
+	ONCE_AIRKISS_CFG = 3,	// 开启一次 AirKiss 配网
+	ONCE_BLUFI_CFG = 9,		// 开启一次 blufi 配网
+	WPS_CFG = 10			// WPS 配网
+} Wifi_Cfg_e;
+
+/********** WIFI配网操作 **********/
+typedef enum Wifi_ScanOpt_def
+{
+	SSID_OPT = 0x01,		// 扫描信息显示SSID
+	CHANNEL_OPT = 0x02,		// 扫描信息显示CHANNEL
+	SECURITY_OPT = 0x04,	// 扫描信息显示SECURITY
+	RSSI_OPT = 0x08,		// 扫描信息显示RSSI
+	MAC_OPT = 0x10			// 扫描信息显示MAC
+} Wifi_ScanOpt_e;
+
+/********** Socket模式 **********/
+typedef enum Socket_Mode_def
+{
+	UDP_SERVER = 1,	// UDP服务端
+	UDP_CLIENT,		// UDP客户端
+	TCP_SERVER,		// TCP服务端
+	TCP_CLIENT,		// TCP客户端
+	// TCP_SEED,	// TCP占位符，不可用，客户端连接TCP Server模组时自动产生
+	SSL_SERVER = 6,	// SSL服务端
+	SSL_CLIENT,		// SSL客户端
+	// SSL_SEED		// SSL占位符，不可用，客户端连接SSL Server模组时自动产生
+} Socket_Mode_e;
+
 /********** 使失能 **********/
 typedef enum BW_enable_def
 {
@@ -164,6 +220,9 @@ typedef enum BW_enable_def
 } BW_enable_e;
 
 #pragma pack(1)
+
+#pragma pack()
+
 typedef struct Basic_AT_def
 {
 	Ret_Status_e(*at)(At_type_e type, unsigned int timeoutS);
@@ -207,25 +266,25 @@ typedef struct Wifi_Basic_def
 	Ret_Status_e(*at_wJeap)(At_type_e type, EAP_type_e EAPtype, unsigned char* ssid, unsigned char* identity, unsigned char* pwd, unsigned int timeoutS);
 	Ret_Status_e(*at_wAutoConn)(At_type_e type, BW_enable_e enable, unsigned char* ssid, unsigned char* pwd, unsigned char* bssid, unsigned int timeoutS);
 	Ret_Status_e(*at_wApDhcp)(At_type_e type, BW_enable_e enable, unsigned char* start_ip, unsigned char* end_ip, unsigned char* gateway, unsigned int timeoutS);
-	Ret_Status_e(*at_wAp)(void);
-	Ret_Status_e(*at_wApInfo)(void);
-	Ret_Status_e(*at_ping)(void);
-	Ret_Status_e(*at_cipStaMac_Def)(void);
-	Ret_Status_e(*at_wCountry)(void);
-	Ret_Status_e(*at_wConfig)(void);
-	Ret_Status_e(*at_wScanOpt)(void);
-	Ret_Status_e(*at_wRssi)(void);
-	Ret_Status_e(*at_blufiSend)(void);
+	// Ret_Status_e(*at_wAp)(At_type_e type, unsigned char* ssid, unsigned char* pwd, unsigned short channel, unsigned char maxConn, BW_enable_e ssidHidden, unsigned int timeoutS);
+	Ret_Status_e(*at_wApInfo)(At_type_e type, unsigned char* ssid, unsigned char* pwd, unsigned short channel, unsigned char maxConn, BW_enable_e ssidHidden, unsigned int timeoutS);
+	Ret_Status_e(*at_ping)(At_type_e type, unsigned char* addr, unsigned char count, unsigned int timeoutS);
+	Ret_Status_e(*at_cipStaMac_Def)(At_type_e type, unsigned char* mac, unsigned int timeoutS);
+	Ret_Status_e(*at_wCountry)(At_type_e type, Country_Code_e country_code, unsigned int timeoutS);
+	Ret_Status_e(*at_wConfig)(At_type_e type, Wifi_Cfg_e status, unsigned char* name, unsigned int timeoutS);
+	Ret_Status_e(*at_wScanOpt)(At_type_e type, unsigned char option, unsigned int timeoutS);
+	Ret_Status_e(*at_wRssi)(At_type_e type, unsigned int timeoutS);
+	Ret_Status_e(*at_blufiSend)(At_type_e type, unsigned int len, unsigned int timeoutS);
 } Wifi_Basic_t;
 
 typedef struct Wifi_TcpIp_def
 {
 	/* 此处有接收数据 */
 	/* 此处有接收数据 */
-	Ret_Status_e(*at_socket)(void);
-	Ret_Status_e(*at_socket2)(void);
-	Ret_Status_e(*at_socketSend)(void);
-	Ret_Status_e(*at_socketSendLine)(void);
+	Ret_Status_e(*at_socket)(At_type_e type, Socket_Mode_e mode, unsigned char* remote_host, unsigned char* port, unsigned int keep_alive, unsigned int conID, unsigned int timeoutS);
+	// Ret_Status_e(*at_socket2)(At_type_e type, Socket_Mode_e mode, unsigned char* remote_host, unsigned char* port, unsigned int keep_alive, unsigned int conID, unsigned int timeoutS);
+	Ret_Status_e(*at_socketSend)(At_type_e type, unsigned int conID, unsigned int len, unsigned int timeoutS);
+	Ret_Status_e(*at_socketSendLine)(At_type_e type, unsigned int conID, unsigned int len, unsigned char* data, unsigned int timeoutS);
 	Ret_Status_e(*at_socketSendHex)(void);
 	Ret_Status_e(*at_socketRead)(void);
 	Ret_Status_e(*at_socketDel)(void);
@@ -342,7 +401,6 @@ typedef struct AT_def
 	Wifi_AT_t	Wifi;
 	Ble_AT_t	Ble;
 } AT_t;
-#pragma pack()
 
 AT_t* get_AT_t(void);
 

@@ -2,6 +2,7 @@
 
 static AT_Ack_t g_Ack_t;
 
+
 /// @brief 获取AT应答全局单例
 /// @param  void
 /// @return AT应答全局单例
@@ -10,29 +11,28 @@ AT_Ack_t* get_Ack_t(void)
 	return &g_Ack_t;
 }
 
-Ret_Status_e analytic_ack(const char *expect)
+
+Ret_Status_e analytic_ack(const char* expect)
 {
 	Ret_Status_e ret = CZ_ERROR;
 	osSemaphoreId_t atAck_Semap = get_atAck_semap();
 	osMemoryPoolId_t memPool = get_memoryPoolId_t();
-	osSemaphoreAcquire(atAck_Semap, 0);
-	if (g_Ack_t.ack_data == NULL || g_Ack_t.ack_data_len == 0) {
-		CZ_ERR("ack_data is NULL  size: %d\r\n", g_Ack_t.ack_data_len);
+	char* expectIndex = NULL;
+	if (g_Ack_t.ack_data == NULL) // || g_Ack_t.ack_data_len == 0)
+		// CZ_ERR("ack_data is NULL  size: %d\r\n", g_Ack_t.ack_data_len);
 		goto EXIT;
-	}
-
-	if (strstr((const char*)g_Ack_t.ack_data, expect) != NULL) {
-		// 解析成功
-		ret = CZ_BUSY;
-	}
-EXIT:
+	osSemaphoreAcquire(atAck_Semap, 0);
+	expectIndex = strstr((const char*)g_Ack_t.ack_data, expect);
+	if (expectIndex == NULL) // 解析失败
+		goto EXIT;
 	osMemoryPoolFree(memPool, g_Ack_t.ack_data);
 	g_Ack_t.ack_data = NULL;
 	osSemaphoreRelease(atAck_Semap);
+EXIT:
 	return ret;
 }
 
-static AT_Ack_t g_Ack_t = {
+AT_Ack_t g_Ack_t = {
 	// 基础指令应答期望
 	.expect.ack_OK = "OK",
 	.expect.ack_ERROR = "ERROR",
@@ -59,7 +59,18 @@ static AT_Ack_t g_Ack_t = {
 	.expect.ack_wifiStaDhcp = "+WSDHCP:",
 	.expect.ack_wifiInfoUnused = "+WJAP:",
 	.expect.ack_wifiInfo = "+STAINFO:",
-	.expect.ack_wifiEAP = "+EVENT:WIFI_GOT_IP",
-	.expect.ack_autoCon = "+WAUTOCONN:",
+	.expect.ack_wifiJEAP = "+EVENT:WIFI_GOT_IP",
+	.expect.ack_wifiAutoCon = "+WAUTOCONN:",
 	.expect.ack_wifiApDhcp = "+WAPDHCP:",
+	.expect.ack_wifiAp = "+WPA:",
+	.expect.ack_wifiPing = "+PING:",
+	.expect.ack_wifiCipStaMacDef = "+CIPSTAMAC_DEF:",
+	.expect.ack_wifiCountry = "+WCOUNTRY:",
+	.expect.ack_wifiConfig = "+WCONFIG:",
+	.expect.ack_wifiScanOpt = "+WSCANOPT:",
+	.expect.ack_wifiRssi = "+WRSSI :",
+	.expect.ack_wifiSeriaNet = ">",
+
+	.urc.ack_eventSocketDown = "+EVENT:SocketDown",
+	.urc.ack_eventSocketSeed = "+EVENT:SocketSeed"
 };

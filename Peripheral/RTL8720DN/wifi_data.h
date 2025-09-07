@@ -4,38 +4,54 @@
 #include "main.h"
 
 #pragma pack(1)
+#pragma pack()
+
 typedef struct Expect_def
 {
 	// 基础指令应答期望
-	const char* ack_OK;						// "OK"
-	const char* ack_ERROR;					// "ERROR"
-	const char* ack_sysMsg;					// "+SYSMSG:"
-	const char* ack_atVer;					// "at version:"
-	const char* ack_sdkVer;					// "sdk version:"
-	const char* ack_firmwareVer;			// "firmware version:"
-	const char* ack_flashManufacturerID;	// "Flash Manufacturer ID:"
-	const char* ack_flashDeviceID;			// "Flash Device ID:"
-	const char* ack_flashSize;				// "Flash Capacity ID:"
-	const char* ack_uartCfg;				// "+UARTCFG:"
-	const char* ack_uartFlowCfg;			// "+UARTFLOWCONTROL:"
-	const char* ack_ota;					// "+OTA:"
-	const char* ack_tickless;				// "+TICKLESS:"
+	const char* const ack_OK;					// "OK"
+	const char* const ack_ERROR;				// "ERROR"
+	const char* const ack_sysMsg;				// "+SYSMSG:"
+	const char* const ack_atVer;				// "at version:"
+	const char* const ack_sdkVer;				// "sdk version:"
+	const char* const ack_firmwareVer;			// "firmware version:"
+	const char* const ack_flashManufacturerID;	// "Flash Manufacturer ID:"
+	const char* const ack_flashDeviceID;		// "Flash Device ID:"
+	const char* const ack_flashSize;			// "Flash Capacity ID:"
+	const char* const ack_uartCfg;				// "+UARTCFG:"
+	const char* const ack_uartFlowCfg;			// "+UARTFLOWCONTROL:"
+	const char* const ack_ota;					// "+OTA:"
+	const char* const ack_tickless;				// "+TICKLESS:"
 
 	// IO控制指令应答期望
-	const char* ack_ioMap;					// "+SYSIOMAP:"
-	const char* ack_ioRead;					// "+SYSGPIOREAD:"
+	const char* const ack_ioMap;				// "+SYSIOMAP:"
+	const char* const ack_ioRead;				// "+SYSGPIOREAD:"
 
 	// WIFI基础指令应答期望
-	const char* ack_wifiMode;				// "+WMODE:"
-	const char* ack_wifiScan;				// "+WSCAN:index SSID,CH,SECURITY,RSSI,BSSID"
-	const char* ack_wifiScanActive;			// "+WSCANACTIVE:"
-	const char* ack_wifiStaDhcp;			// "+WSDHCP:"
-	const char* ack_wifiInfoUnused;			// "+WJAP:"
-	const char* ack_wifiInfo;				// "+STAINFO:"
-	const char* ack_wifiEAP;				// "+EVENT:WIFI_GOT_IP"
-	const char* ack_autoCon;				// "+WAUTOCONN:"
-	const char* ack_wifiApDhcp;				// "+WAPDHCP:"
+	const char* const ack_wifiMode;				// "+WMODE:"
+	const char* const ack_wifiScan;				// "+WSCAN:index SSID,CH,SECURITY,RSSI,BSSID"
+	const char* const ack_wifiScanActive;		// "+WSCANACTIVE:"
+	const char* const ack_wifiStaDhcp;			// "+WSDHCP:"
+	const char* const ack_wifiInfoUnused;		// "+WJAP:"
+	const char* const ack_wifiInfo;				// "+STAINFO:"
+	const char* const ack_wifiJEAP;				// "+EVENT:WIFI_GOT_IP"
+	const char* const ack_wifiAutoCon;			// "+WAUTOCONN:"
+	const char* const ack_wifiApDhcp;			// "+WAPDHCP:"
+	const char* const ack_wifiAp;				// "+WPA:"
+	const char* const ack_wifiPing;				// "+PING:"
+	const char* const ack_wifiCipStaMacDef;		// "+CIPSTAMAC_DEF:"
+	const char* const ack_wifiCountry;			// "+WCOUNTRY:"
+	const char* const ack_wifiConfig;			// "+WCONFIG:"
+	const char* const ack_wifiScanOpt;			// "+WSCANOPT:"
+	const char* const ack_wifiRssi;				// "+WRSSI :"
+	const char* const ack_wifiSeriaNet;			// ">"
 } Expect_t;
+
+typedef struct URC_def
+{
+	const char* const ack_eventSocketDown;		// "+EVENT:SocketDown"
+	const char* const ack_eventSocketSeed;		// "+EVENT:SocketSeed"
+} URC_t;
 
 typedef struct Basic_AT_ACK_def
 {
@@ -122,12 +138,12 @@ typedef struct AT_Ack_def
 	Wifi_AT_ACK_t	Wifi;
 	Ble_AT_ACK_t	Ble;
 	Expect_t		expect;
-	unsigned char*	ack_data;		// AT应答数据
+	URC_t			urc;
+	unsigned char* ack_data;		// AT应答数据
 	unsigned int	ack_data_len;	// AT应答数据长度
 } AT_Ack_t;
-#pragma pack()
 
 AT_Ack_t* get_Ack_t(void);
-Ret_Status_e analytic_ack(const char *expect);
+Ret_Status_e analytic_ack(const char* expect);
 
 #endif

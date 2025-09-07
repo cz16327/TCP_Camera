@@ -1,5 +1,5 @@
-#ifndef __PUBLIC_H
-#define __PUBLIC_H
+#ifndef __PUBLIC_H__
+#define __PUBLIC_H__
 
 #include "stdio.h"
 #include "string.h"
@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "ctype.h"
+#include "assert.h"
 
 #include "cz_log.h"
 #include "delay.h"

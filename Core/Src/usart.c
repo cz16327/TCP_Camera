@@ -349,11 +349,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef* huart, unsigned short Size)
 				CZ_ERR("usart data block alloc failed!\r\n");
 				goto EXIT;
 			}
-			HAL_UARTEx_ReceiveToIdle_DMA(&huart2, ack_data_block->ack_data, USART2_REC_LEN - 1);	// 防止数据大于等于USART2_REC_LEN，导致strlen计算溢出，故最后一位不采保持0
+			HAL_UARTEx_ReceiveToIdle_DMA(&huart2, ack_data_block->ack_data, USART2_REC_LEN - 1); // 防止数据大于等于USART2_REC_LEN，导致strlen计算溢出，故最后一位不采保持\0
 			ack_data_block->ack_data_len = strlen((const char*)ack_data_block->ack_data);
-			if (ack_data_block->ack_data_len >= USART2_REC_LEN - 1) {
+			if (ack_data_block->ack_data_len >= USART2_REC_LEN - 1)
 				CZ_WARN("data maybe distrust\r\n");
-			}
 			// CZ_DBG("usart data get\r\n");
 		} else {
 			CZ_WARN("usart data missing!\r\n");
