@@ -70,7 +70,12 @@ AT_Ack_t g_Ack_t = {
 	.expect.ack_wifiScanOpt = "+WSCANOPT:",
 	.expect.ack_wifiRssi = "+WRSSI :",
 	.expect.ack_wifiSeriaNet = ">",
-
+	.expect.ack_wifiSocketRead = "+SOCKETREAD:",
+	.expect.ack_wifiSocketAutoTt = "+SOCKETAUTOTT:",
+	.expect.ack_wifiSslCret = "+SSLCRET:",
+	.expect.ack_wifiDoamin = "+WDOMAIN:",
+	.expect.ack_wifiDns = "+WDNS:",
+	// WIFI URC
 	.urc.ack_eventSocketDown = "+EVENT:SocketDown",
 	.urc.ack_eventSocketSeed = "+EVENT:SocketSeed"
 };

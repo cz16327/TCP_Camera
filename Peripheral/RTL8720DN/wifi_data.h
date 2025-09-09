@@ -22,11 +22,9 @@ typedef struct Expect_def
 	const char* const ack_uartFlowCfg;			// "+UARTFLOWCONTROL:"
 	const char* const ack_ota;					// "+OTA:"
 	const char* const ack_tickless;				// "+TICKLESS:"
-
 	// IO控制指令应答期望
 	const char* const ack_ioMap;				// "+SYSIOMAP:"
 	const char* const ack_ioRead;				// "+SYSGPIOREAD:"
-
 	// WIFI基础指令应答期望
 	const char* const ack_wifiMode;				// "+WMODE:"
 	const char* const ack_wifiScan;				// "+WSCAN:index SSID,CH,SECURITY,RSSI,BSSID"
@@ -45,6 +43,11 @@ typedef struct Expect_def
 	const char* const ack_wifiScanOpt;			// "+WSCANOPT:"
 	const char* const ack_wifiRssi;				// "+WRSSI :"
 	const char* const ack_wifiSeriaNet;			// ">"
+	const char* const ack_wifiSocketRead;		// "+SOCKETREAD:"
+	const char* const ack_wifiSocketAutoTt;		// "+SOCKETAUTOTT:"
+	const char* const ack_wifiSslCret;			// "+SSLCRET:"
+	const char* const ack_wifiDoamin;			// "+WDOMAIN:"
+	const char* const ack_wifiDns;				// "+WDNS:"
 } Expect_t;
 
 typedef struct URC_def

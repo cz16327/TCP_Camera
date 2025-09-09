@@ -6,7 +6,7 @@
 #define USARTx				huart2
 #define WAIT_USART_DMA 		(500)	// 等待DMA发送完成的时间
 #define WAIT_MS				(1000)
-#define MAX_LINE_DATALEN	(1024)	// 单次透传最大数据长度
+#define MAX_LINE_LEN	(1024)	// 单次透传最大数据长度
 
 /***** 执行方式枚举体 *****/
 typedef enum At_type_def
@@ -212,6 +212,38 @@ typedef enum Socket_Mode_def
 	// SSL_SEED		// SSL占位符，不可用，客户端连接SSL Server模组时自动产生
 } Socket_Mode_e;
 
+/********** 接收模式 **********/
+typedef enum Recv_Mode_def
+{
+	RECV_PASSIVE,	// 被动接收
+	RECV_ACTIVE		// 主动接收
+} Recv_Mode_e;
+
+/********** 透传模式 **********/
+typedef enum Tt_Mode_def
+{
+	TT_UDP_FIRST,
+	TT_NORMAL,
+	TT_UDP_LAST
+} Tt_Mode_e;
+
+/********** 自动透传类型 **********/
+typedef enum AutoTt_Type_def
+{
+	AUTO_TT_DISABLE,		// 0:禁用自动进入透传模式
+	AUTO_TT_UDPSERVER,		// 1:自动进入 UDPServer 透传模式
+	AUTO_TT_UDPCLIENT,		// 2:自动进入 UDPClient 透传模式
+	AUTO_TT_TCPCLIENT = 4	// 4:自动进入 TCPClient 透传模式
+} AutoTt_Type_e;
+
+/********** SSL证书类型 **********/
+typedef enum SSL_Type_def
+{
+	SSL_CA = 1,	// CA 根证书
+	SSL_PUBLIC,	// 客户端公钥
+	SSL_PRIVATE	// 客户端私钥
+} SSL_Type_e;
+
 /********** 使失能 **********/
 typedef enum BW_enable_def
 {
@@ -238,13 +270,13 @@ typedef struct Basic_AT_def
 	Ret_Status_e(*at_uartCfg)(At_type_e type, unsigned int baudrate, Uart_databits_e databits, Uart_stopbits_e stopbits, Uart_parity_e parity, unsigned int timeoutS);
 	Ret_Status_e(*at_uartFlowControl)(At_type_e type, Uart_flow_e flowcontrol, unsigned int timeoutS);
 	Ret_Status_e(*at_setDownloadMode)(At_type_e type, Download_mode_e mode, unsigned int timeoutS);
-	Ret_Status_e(*at_ota)(At_type_e type, OTA_mode_e mode, unsigned char *Host_name, unsigned short Port, unsigned char *Route, unsigned int timeoutS);
+	Ret_Status_e(*at_ota)(At_type_e type, OTA_mode_e mode, unsigned char* Host_name, unsigned short Port, unsigned char* Route, unsigned int timeoutS);
 	Ret_Status_e(*at_tickless)(At_type_e type, unsigned char tickless, unsigned int timeoutS);
 } Basic_AT_t;
 
 typedef struct IOctrl_AT_def
 {
-	Ret_Status_e(*at_sysIoMap)(At_type_e type, unsigned char PinNumber, unsigned char *pinx_list, unsigned int timeoutS);
+	Ret_Status_e(*at_sysIoMap)(At_type_e type, unsigned char PinNumber, unsigned char* pinx_list, unsigned int timeoutS);
 	Ret_Status_e(*at_sysGpioWrite)(At_type_e type, unsigned char pin, IO_level_e level, unsigned int timeoutS);
 	Ret_Status_e(*at_sysGpioRead)(At_type_e type, unsigned char pin, unsigned int timeoutS);
 	Ret_Status_e(*at_pwmCfg)(At_type_e type, unsigned char pin, unsigned int cycle, unsigned int duty, unsigned int timeoutS);
@@ -285,15 +317,15 @@ typedef struct Wifi_TcpIp_def
 	// Ret_Status_e(*at_socket2)(At_type_e type, Socket_Mode_e mode, unsigned char* remote_host, unsigned char* port, unsigned int keep_alive, unsigned int conID, unsigned int timeoutS);
 	Ret_Status_e(*at_socketSend)(At_type_e type, unsigned int conID, unsigned int len, unsigned int timeoutS);
 	Ret_Status_e(*at_socketSendLine)(At_type_e type, unsigned int conID, unsigned int len, unsigned char* data, unsigned int timeoutS);
-	Ret_Status_e(*at_socketSendHex)(void);
-	Ret_Status_e(*at_socketRead)(void);
-	Ret_Status_e(*at_socketDel)(void);
-	Ret_Status_e(*at_socketRecvCfg)(void);
-	Ret_Status_e(*at_socketTt)(void);
-	Ret_Status_e(*at_socketAutoTt)(void);
-	Ret_Status_e(*at_sslCret)(void);
-	Ret_Status_e(*at_wDomain)(void);
-	Ret_Status_e(*at_wDns)(void);
+	Ret_Status_e(*at_socketSendHex)(At_type_e type, unsigned int conID, unsigned int len, unsigned char* data, unsigned int timeoutS);
+	Ret_Status_e(*at_socketRead)(At_type_e type, unsigned int conID, unsigned int timeoutS);
+	Ret_Status_e(*at_socketDel)(At_type_e type, unsigned int conID, unsigned int timeoutS);
+	Ret_Status_e(*at_socketRecvCfg)(At_type_e type, Recv_Mode_e mode, unsigned int timeoutS);
+	Ret_Status_e(*at_socketTt)(At_type_e type, Tt_Mode_e mode, unsigned int timeoutS);
+	Ret_Status_e(*at_socketAutoTt)(At_type_e type, AutoTt_Type_e mode, unsigned char* remote_host, unsigned char* port, unsigned int timeoutS);
+	Ret_Status_e(*at_sslCret)(At_type_e type, SSL_Type_e ssl_type, unsigned int len, unsigned int timeoutS);
+	Ret_Status_e(*at_wDomain)(At_type_e type, unsigned char* server_name, unsigned int timeoutS);
+	Ret_Status_e(*at_wDns)(At_type_e type, unsigned char* dns_ip1, unsigned char* dns_ip2, unsigned int timeoutS);
 } Wifi_TcpIp_t;
 
 typedef struct Wifi_Mqtt_def
