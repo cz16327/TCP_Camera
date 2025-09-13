@@ -26,8 +26,13 @@
 		"compare": "c",
 		"type_traits": "c",
 		"assert.h": "c",
-		"cmsis_os2.h": "c"
+		"cmsis_os2.h": "c",
+		"spi.h": "c",
+		"tim.h": "c",
+		"stm32f4xx_hal_spi.h": "c"
 	},
-	"C_Cpp.default.compilerPath": "C:/MinGW/bin/gcc.exe",
-	"iar-build.c-stat.showInToolbar": false
+	"C_Cpp.default.compilerPath": "D:/MinGW/15.2.0/mingw64/bin/gcc.exe",
+	"iar-build.c-stat.showInToolbar": false,
+	"python-envs.defaultEnvManager": "ms-python.python:system",
+	"python-envs.pythonProjects": []
 }

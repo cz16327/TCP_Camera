@@ -15,9 +15,9 @@
   *
   ******************************************************************************
   */
-  /* USER CODE END Header */
+/* USER CODE END Header */
 
-  /* Includes ------------------------------------------------------------------*/
+/* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
@@ -28,6 +28,7 @@
 #include "iwdg.h"
 #include "gpio.h"
 #include "tim.h"
+#include "spi.h"
 #include "iwdg.h"
 #include "wifi_at.h"
 #include "AT24C02.h"
@@ -64,28 +65,28 @@ osThreadId_t initTaskHandle;
 const osThreadAttr_t initTask_attributes = {
   .name = "initTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t)osPriorityHigh7,
+  .priority = (osPriority_t) osPriorityHigh7,
 };
 /* Definitions for sdTask */
 osThreadId_t sdTaskHandle;
 const osThreadAttr_t sdTask_attributes = {
   .name = "sdTask",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t)osPriorityLow1,
+  .priority = (osPriority_t) osPriorityLow1,
 };
 /* Definitions for liveTask */
 osThreadId_t liveTaskHandle;
 const osThreadAttr_t liveTask_attributes = {
   .name = "liveTask",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t)osPriorityLow,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for adcTask */
 osThreadId_t adcTaskHandle;
 const osThreadAttr_t adcTask_attributes = {
   .name = "adcTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t)osPriorityHigh,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for atAck_semaphores */
 osSemaphoreId_t atAck_semaphoresHandle;
@@ -143,16 +144,16 @@ void memoryPool_init(void)
 }
 /* USER CODE END FunctionPrototypes */
 
-void InitTask(void* argument);
-void SDcardTask(void* argument);
-void LiveTask(void* argument);
-void AdcTask(void* argument);
+void InitTask(void *argument);
+void SDcardTask(void *argument);
+void LiveTask(void *argument);
+void AdcTask(void *argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char* pcTaskName);
+void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 
 /* USER CODE BEGIN 4 */
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char* pcTaskName)
@@ -169,54 +170,53 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char* pcTaskName)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void)
-{
-	/* USER CODE BEGIN Init */
-	/* USER CODE END Init */
+void MX_FREERTOS_Init(void) {
+  /* USER CODE BEGIN Init */
+  /* USER CODE END Init */
 
-	/* USER CODE BEGIN RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
 			  /* add mutexes, ... */
-	/* USER CODE END RTOS_MUTEX */
+  /* USER CODE END RTOS_MUTEX */
 
-	/* Create the semaphores(s) */
-	/* creation of atAck_semaphores */
-	atAck_semaphoresHandle = osSemaphoreNew(1, 1, &atAck_semaphores_attributes);
+  /* Create the semaphores(s) */
+  /* creation of atAck_semaphores */
+  atAck_semaphoresHandle = osSemaphoreNew(1, 1, &atAck_semaphores_attributes);
 
-	/* creation of adcSwitch_semaphores */
-	adcSwitch_semaphoresHandle = osSemaphoreNew(1, 0, &adcSwitch_semaphores_attributes);
+  /* creation of adcSwitch_semaphores */
+  adcSwitch_semaphoresHandle = osSemaphoreNew(1, 0, &adcSwitch_semaphores_attributes);
 
-	/* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
 			  /* add semaphores, ... */
-	/* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-	/* USER CODE BEGIN RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
 			  /* start timers, add new ones, ... */
-	/* USER CODE END RTOS_TIMERS */
+  /* USER CODE END RTOS_TIMERS */
 
-	/* USER CODE BEGIN RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
 			  /* add queues, ... */
-	/* USER CODE END RTOS_QUEUES */
+  /* USER CODE END RTOS_QUEUES */
 
-	/* Create the thread(s) */
-	/* creation of initTask */
-	initTaskHandle = osThreadNew(InitTask, NULL, &initTask_attributes);
+  /* Create the thread(s) */
+  /* creation of initTask */
+  initTaskHandle = osThreadNew(InitTask, NULL, &initTask_attributes);
 
-	/* creation of sdTask */
-	sdTaskHandle = osThreadNew(SDcardTask, NULL, &sdTask_attributes);
+  /* creation of sdTask */
+  sdTaskHandle = osThreadNew(SDcardTask, NULL, &sdTask_attributes);
 
-	/* creation of liveTask */
-	liveTaskHandle = osThreadNew(LiveTask, NULL, &liveTask_attributes);
+  /* creation of liveTask */
+  liveTaskHandle = osThreadNew(LiveTask, NULL, &liveTask_attributes);
 
-	/* creation of adcTask */
-	adcTaskHandle = osThreadNew(AdcTask, NULL, &adcTask_attributes);
+  /* creation of adcTask */
+  adcTaskHandle = osThreadNew(AdcTask, NULL, &adcTask_attributes);
 
-	/* USER CODE BEGIN RTOS_THREADS */
+  /* USER CODE BEGIN RTOS_THREADS */
 			  /* add threads, ... */
-	/* USER CODE END RTOS_THREADS */
+  /* USER CODE END RTOS_THREADS */
 
-	/* USER CODE BEGIN RTOS_EVENTS */
+  /* USER CODE BEGIN RTOS_EVENTS */
 			  /* add events, ... */
-	/* USER CODE END RTOS_EVENTS */
+  /* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -226,11 +226,12 @@ void MX_FREERTOS_Init(void)
   * @param  argument: Not used
   * @retval None
   */
-  /* USER CODE END Header_InitTask */
-void InitTask(void* argument)
+/* USER CODE END Header_InitTask */
+void InitTask(void *argument)
 {
-	/* init code for USB_DEVICE */
-	/* USER CODE BEGIN InitTask */
+  /* init code for USB_DEVICE */
+//   MX_USB_DEVICE_Init();
+  /* USER CODE BEGIN InitTask */
 		/* Infinite loop */
 	for (;;) {
 		delay_init();
@@ -242,7 +243,7 @@ void InitTask(void* argument)
 		vTaskDelete(NULL);
 		osDelay(100);
 	}
-	/* USER CODE END InitTask */
+  /* USER CODE END InitTask */
 }
 
 /* USER CODE BEGIN Header_SDcardTask */
@@ -252,9 +253,9 @@ void InitTask(void* argument)
 * @retval None
 */
 /* USER CODE END Header_SDcardTask */
-void SDcardTask(void* argument)
+void SDcardTask(void *argument)
 {
-	/* USER CODE BEGIN SDcardTask */
+  /* USER CODE BEGIN SDcardTask */
 	// MX_USB_DEVICE_Init();
 	IWDG_Feed();
 	/* Infinite loop */
@@ -266,7 +267,7 @@ void SDcardTask(void* argument)
 		IWDG_Feed();
 		osDelay(10000);
 	}
-	/* USER CODE END SDcardTask */
+  /* USER CODE END SDcardTask */
 }
 
 /* USER CODE BEGIN Header_LiveTask */
@@ -276,9 +277,9 @@ void SDcardTask(void* argument)
 * @retval None
 */
 /* USER CODE END Header_LiveTask */
-void LiveTask(void* argument)
+void LiveTask(void *argument)
 {
-	/* USER CODE BEGIN LiveTask */
+  /* USER CODE BEGIN LiveTask */
 	dump_task_info();
 	WIFI_EN;
 	WIFI_PWRON;
@@ -304,6 +305,11 @@ void LiveTask(void* argument)
 	// unsigned char data[30] = {0};
 	// unsigned char get_data[30] = {0};
 	IWDG_Feed();
+	const unsigned char start_cmd = 0x11;
+	const unsigned char stop_cmd = 0x22;
+	unsigned char rx_start = 0;
+	unsigned char rx_stop = 0;
+	unsigned int cnt = 0;
 	/* Infinite loop */
 	for (;;) {
 		// i++;
@@ -314,9 +320,24 @@ void LiveTask(void* argument)
 		// CZ_RAW("%s [%d %d]\r\n", get_data, ii, iii);
 		IWDG_Feed();
 		LED_TOGGLE;
+		if (cnt == 10) {
+			CZ_LOG("start %d\r\n", spi_TxRx(&hspi1, &start_cmd, 1, &rx_start, 0, 1000));
+			if (rx_start == start_cmd) {
+				CZ_LOG("start OK\r\n");
+				rx_start = 0;
+			}
+		} else if (cnt >= 20) {
+			CZ_LOG("stop %d\r\n", spi_TxRx(&hspi1, &stop_cmd, 1, &rx_stop, 0, 1000));
+			if (rx_stop == stop_cmd) {
+				CZ_LOG("stop OK\r\n");
+				rx_stop = 0;
+			}
+			cnt = 0;
+		}
+		cnt++;
 		osDelay(500);
 	}
-	/* USER CODE END LiveTask */
+  /* USER CODE END LiveTask */
 }
 
 /* USER CODE BEGIN Header_AdcTask */
@@ -326,9 +347,9 @@ void LiveTask(void* argument)
 * @retval None
 */
 /* USER CODE END Header_AdcTask */
-void AdcTask(void* argument)
+void AdcTask(void *argument)
 {
-	/* USER CODE BEGIN AdcTask */
+  /* USER CODE BEGIN AdcTask */
 	osSemaphoreId_t adcSwitch_Semap = get_adcSwitch_semap();
 	/* Infinite loop */
 	for (;;) {
@@ -336,7 +357,7 @@ void AdcTask(void* argument)
 			tim_vbat_adc_enable(CZ_ENABLE);
 		osDelay(1);
 	}
-	/* USER CODE END AdcTask */
+  /* USER CODE END AdcTask */
 }
 
 /* Private application code --------------------------------------------------*/

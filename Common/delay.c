@@ -1,13 +1,10 @@
 #include "delay.h"
-#include "stm32_hal_legacy.h"
 
-#define USE_HAL_LEGACY
-#define Timebase_Source_is_SysTick 0	//µ±Timebase SourceÎªSysTickÊ±¸ÄÎª1   µ±Ê¹ÓÃFreeRTOS£¬Timebase SourceÎªÆäËû¶¨Ê±Æ÷Ê±¸ÄÎª0
+#define Timebase_Source_is_SysTick	(0)	// å½“Timebase Sourceä¸ºSysTickæ—¶æ”¹ä¸º1    å½“ä½¿ç”¨FreeRTOSï¼ŒTimebase Sourceä¸ºå…¶ä»–å®šæ—¶å™¨æ—¶æ”¹ä¸º0
 
 #if	(!Timebase_Source_is_SysTick)
-extern TIM_HandleTypeDef htim1;		//µ±Ê¹ÓÃFreeRTOS£¬Timebase SourceÎªÆäËû¶¨Ê±Æ÷Ê±£¬ĞŞ¸ÄÎª¶ÔÓ¦µÄ¶¨Ê±Æ÷
-#define Timebase_htim htim1
-
+extern TIM_HandleTypeDef	htim1;	// å½“ä½¿ç”¨FreeRTOSï¼ŒTimebase Sourceä¸ºå…¶ä»–å®šæ—¶å™¨æ—¶ï¼Œä¿®æ”¹ä¸ºå¯¹åº”çš„å®šæ—¶å™¨
+#define Timebase_htim	(htim1)
 #define Delay_GetCounter()		__HAL_TIM_GetCounter(&Timebase_htim)
 #define Delay_GetAutoreload()	__HAL_TIM_GetAutoreload(&Timebase_htim)
 #else
@@ -15,14 +12,26 @@ extern TIM_HandleTypeDef htim1;		//µ±Ê¹ÓÃFreeRTOS£¬Timebase SourceÎªÆäËû¶¨Ê±Æ÷Ê±
 #define Delay_GetAutoreload()	(SysTick->LOAD)
 #endif
 
-static uint16_t fac_us = 0;
-static uint32_t fac_ms = 0;
+static unsigned int fac_us = 0;
+static unsigned int fac_ms = 0;
+static TimeBaseIrq_Ms_t g_timebase_ms = {0};
 
-/*³õÊ¼»¯*/
+
+/// @brief è·å–æ—¶åŸºä¸­æ–­ç´¯è®¡æ—¶é—´å¥æŸ„
+/// @param  void
+/// @return æ—¶åŸºä¸­æ–­ç´¯è®¡æ—¶é—´å¥æŸ„
+TimeBaseIrq_Ms_t* get_TimeBaseIrq_Ms_t(void)
+{
+	return &g_timebase_ms;
+}
+
+
+/// @brief å»¶æ—¶å‡½æ•°åˆå§‹åŒ–
+/// @param  void
 void delay_init(void)
 {
 #if	(!Timebase_Source_is_SysTick)
-	fac_ms = 1000000;				//×÷ÎªÊ±»ùµÄ¼ÆÊıÆ÷Ê±ÖÓÆµÂÊÔÚHAL_InitTick()ÖĞ±»ÉèÎªÁË1MHz
+	fac_ms = 1000000; // ä½œä¸ºæ—¶åŸºçš„è®¡æ•°å™¨æ—¶é’Ÿé¢‘ç‡åœ¨HAL_InitTick()ä¸­è¢«è®¾ä¸ºäº†1MHz
 	fac_us = fac_ms / 1000;
 #else
 	fac_ms = SystemCoreClock / 1000;
@@ -31,14 +40,15 @@ void delay_init(void)
 }
 
 
-/*Î¢Ãë¼¶ÑÓÊ±*/
-void delay_us(uint32_t nus)
+/// @brief å¾®ç§’çº§å»¶æ—¶
+/// @param nus å¾®ç§’
+void delay_us(unsigned int nus)
 {
-	uint32_t ticks = 0;
-	uint32_t told = 0;
-	uint32_t tnow = 0;
-	uint32_t tcnt = 0;
-	uint32_t reload = 0;
+	unsigned int ticks = 0;
+	unsigned int told = 0;
+	unsigned int tnow = 0;
+	unsigned int tcnt = 0;
+	unsigned int reload = 0;
 	reload = Delay_GetAutoreload();
 	ticks = nus * fac_us;
 	told = Delay_GetCounter();
@@ -57,14 +67,15 @@ void delay_us(uint32_t nus)
 }
 
 
-/*ºÁÃë¼¶ÑÓÊ±*/
-void delay_ms(uint32_t nms)
+/// @brief æ¯«ç§’çº§å»¶æ—¶
+/// @param nms æ¯«ç§’
+void delay_ms(unsigned int nms)
 {
-	uint32_t ticks = 0;
-	uint32_t told = 0;
-	uint32_t tnow = 0;
-	uint32_t tcnt = 0;
-	uint32_t reload = 0;
+	unsigned int ticks = 0;
+	unsigned int told = 0;
+	unsigned int tnow = 0;
+	unsigned int tcnt = 0;
+	unsigned int reload = 0;
 	reload = Delay_GetAutoreload();
 	ticks = nms * fac_ms;
 	told = Delay_GetCounter();
@@ -82,20 +93,10 @@ void delay_ms(uint32_t nms)
 	}
 }
 
-/*ÖØĞ´HAL_Delay*/
-// void HAL_Delay(uint32_t Delay)
-// {
-//   uint32_t tickstart = HAL_GetTick();
-//   uint32_t wait = Delay;
 
-//   /*²»Ì«Ã÷°×¹Ù·½Ô´ÂëÎªÉ¶ÕâÃ´Ğ´£¬»á¶àÑÓÊ±1ms£¬×¢ÊÍµôºó¸ü×¼*/
-// //  /* Add a freq to guarantee minimum wait */
-// //  if (wait < HAL_MAX_DELAY)
-// //  {
-// //    wait += (uint32_t)(uwTickFreq);
-// //  }
-
-//   while ((HAL_GetTick() - tickstart) < wait)
-//   {
-//   }
-// }
+/// @brief æ—¶åŸºä¸­æ–­å›è°ƒå‡½æ•°
+/// @param  void
+void timebase_irq_callback(void)
+{
+	g_timebase_ms.spi_timeout++;
+}

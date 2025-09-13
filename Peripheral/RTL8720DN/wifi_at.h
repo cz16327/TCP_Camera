@@ -244,6 +244,22 @@ typedef enum SSL_Type_def
 	SSL_PRIVATE	// 客户端私钥
 } SSL_Type_e;
 
+/********** MQTT 配置项 **********/
+typedef enum Mqtt_Cfg_def
+{
+	MQTT_CFG_IP = 1,	// 设置连接的域名或 IP
+	MQTT_CFG_PORT,		// 设置服务器端口号
+	MQTT_CFG_TYPE,		// 设置连接方式(1：使用 TCP 连接；2：使用 SSL 连接)
+	MQTT_CFG_ID,		// 设置客户端 ID
+	MQTT_CFG_USER,		// 设置用户名(最大长度 63 字节)
+	MQTT_CFG_PSWD,		// 设置密码(最大长度 63 字节)
+	MQTT_CFG_LWT		// 设置遗嘱消息格式为AT+MQTT=7,<LWT_topic>,<LWT_qos>,<LWT_Retained>,<LWTpayload>
+	// LWT_topic：遗嘱主题(不需要遗嘱这里设置为"")
+	// LWT_qos：遗嘱 QOS(0/1/2)
+	// LWT_Retained：遗嘱 retained(0/1)
+	// LWTpayload：遗嘱消息内容(不需要遗嘱这里设置为"")
+} Mqtt_Cfg_e;
+
 /********** 使失能 **********/
 typedef enum BW_enable_def
 {
@@ -330,7 +346,7 @@ typedef struct Wifi_TcpIp_def
 
 typedef struct Wifi_Mqtt_def
 {
-	Ret_Status_e(*at_mqtt)(void);
+	Ret_Status_e(*at_mqtt)(At_type_e type, Mqtt_Cfg_e key, unsigned char* data, unsigned int timeoutS);
 	Ret_Status_e(*at_mqttVer)(void);
 	Ret_Status_e(*at_mqttBuf)(void);
 	Ret_Status_e(*at_mqttKeepAlive)(void);

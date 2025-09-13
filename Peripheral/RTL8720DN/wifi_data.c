@@ -75,7 +75,9 @@ AT_Ack_t g_Ack_t = {
 	.expect.ack_wifiSslCret = "+SSLCRET:",
 	.expect.ack_wifiDoamin = "+WDOMAIN:",
 	.expect.ack_wifiDns = "+WDNS:",
+	.expect.ack_wifiMqtt = "+MQTT:",
 	// WIFI URC
 	.urc.ack_eventSocketDown = "+EVENT:SocketDown",
-	.urc.ack_eventSocketSeed = "+EVENT:SocketSeed"
+	.urc.ack_eventSocketSeed = "+EVENT:SocketSeed",
+	.urc.ack_eventMqttConnect = "+EVENT:MQTT_CONNECT",
 };

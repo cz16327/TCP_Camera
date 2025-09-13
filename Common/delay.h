@@ -3,8 +3,17 @@
 
 #include "main.h"
 
-extern void delay_init(void);
-extern void delay_us(uint32_t nus);
-extern void delay_ms(uint32_t nms);
+// 时基中断累计时间
+typedef struct TimeBaseIrq_Ms_def
+{
+	volatile unsigned int spi_timeout;	// SPI传输超时时间
+} TimeBaseIrq_Ms_t;
+
+
+TimeBaseIrq_Ms_t* get_TimeBaseIrq_Ms_t(void);
+void delay_init(void);
+void delay_us(unsigned int nus);
+void delay_ms(unsigned int nms);
+void timebase_irq_callback(void);
 
 #endif

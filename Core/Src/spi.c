@@ -21,7 +21,8 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "stm32f4xx_hal_spi.h"
+#include "public.h"
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi1;
@@ -46,7 +47,7 @@ void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -56,7 +57,7 @@ void MX_SPI1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI1_Init 2 */
-
+	SPI_CSH_DIS;
   /* USER CODE END SPI1_Init 2 */
 
 }
@@ -173,5 +174,55 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+// /// @brief SPI收发
+// /// @param hspi SPI句柄
+// /// @param txdata 待发送数据
+// /// @param rxdata 接收缓存
+// /// @param len 长度
+// /// @param timeout 超时时间
+// /// @return 结果
+// Ret_Status_e spi_TxRx(SPI_HandleTypeDef *hspi, const unsigned char* txdata, unsigned char* rxdata, unsigned int len, unsigned int timeout)
+// {
+// 	Ret_Status_e ret = CZ_OK;
+// 	TimeBaseIrq_Ms_t* timebase_ms = get_TimeBaseIrq_Ms_t();
+// 	SPI_CSL_EN;
+// 	ret = (Ret_Status_e)HAL_SPI_TransmitReceive_DMA(hspi, txdata, rxdata, len);
+// 	timebase_ms->spi_timeout = 0;
+// 	while ((HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) && timebase_ms->spi_timeout < timeout);
+// 	if (timebase_ms->spi_timeout >= timeout)
+// 		ret = CZ_TIMEOUT;
+// 	SPI_CSH_DIS;
+// 	return ret;
+// }
 
+
+/// @brief SPI收发
+/// @param hspi SPI句柄
+/// @param txdata 待发送数据
+/// @param txlen 待发送数据长度
+/// @param rxdata 待接收数据
+/// @param rxlen 待接收数据长度
+/// @param timeout 超时时间
+/// @return 结果
+Ret_Status_e spi_TxRx(SPI_HandleTypeDef *hspi, const unsigned char* txdata, unsigned int txlen, unsigned char* rxdata, unsigned int rxlen, unsigned int timeout)
+{
+	Ret_Status_e ret = CZ_OK;
+	TimeBaseIrq_Ms_t* timebase_ms = get_TimeBaseIrq_Ms_t();
+	timebase_ms->spi_timeout = 0;
+	SPI_CSL_EN;
+	delay_ms(10); // 兼容OpenMV时序，当开启摄像头时，从机触发CS中断获取数据有延时（开启摄像头时延时更大），需主机延时10ms等待从机响应中断再进行数据传输以实现SCK同步。
+	ret = (Ret_Status_e)HAL_SPI_Transmit_DMA(hspi, txdata, txlen);
+	while ((HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) && timebase_ms->spi_timeout < timeout);
+	if (timebase_ms->spi_timeout >= timeout)
+		ret = CZ_TIMEOUT;
+	if (ret == CZ_OK && rxdata && rxlen) {
+		timebase_ms->spi_timeout = 0;
+		ret = (Ret_Status_e)HAL_SPI_Receive_DMA(hspi, rxdata, rxlen);
+		while ((HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) && timebase_ms->spi_timeout < timeout);
+		if (timebase_ms->spi_timeout >= timeout)
+			ret = CZ_TIMEOUT;
+	}
+	SPI_CSH_DIS;
+	return ret;
+}
 /* USER CODE END 1 */

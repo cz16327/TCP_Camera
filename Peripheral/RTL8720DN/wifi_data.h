@@ -48,12 +48,14 @@ typedef struct Expect_def
 	const char* const ack_wifiSslCret;			// "+SSLCRET:"
 	const char* const ack_wifiDoamin;			// "+WDOMAIN:"
 	const char* const ack_wifiDns;				// "+WDNS:"
+	const char* const ack_wifiMqtt;				// "+MQTT:"
 } Expect_t;
 
 typedef struct URC_def
 {
 	const char* const ack_eventSocketDown;		// "+EVENT:SocketDown"
 	const char* const ack_eventSocketSeed;		// "+EVENT:SocketSeed"
+	const char* const ack_eventMqttConnect;		// "+EVENT:MQTT_CONNECT"
 } URC_t;
 
 typedef struct Basic_AT_ACK_def

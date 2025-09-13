@@ -1373,6 +1373,39 @@ static Ret_Status_e wifi_dns(At_type_e type, unsigned char* dns_ip1, unsigned ch
 }
 
 
+/// @brief MQTT 的配置和连接
+/// @param type 类型 Query/Set/Excution
+/// @param key MQTT 配置项
+/// @param data MQTT 配置内容
+/// @param timeoutS 超时时间(s)
+/// @return 结果
+static Ret_Status_e wifi_mqtt(At_type_e type, Mqtt_Cfg_e key, unsigned char* data, unsigned int timeoutS)
+{
+	Ret_Status_e ret = CZ_ERROR;
+	AT_Ack_t* ack = get_Ack_t();
+	if (type == Query) { // Query
+		unsigned char Query_cmd[] = "AT+MQTT?\r\n";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Query_cmd), Query_cmd);
+		ret = atcmd_send(Query_cmd, strlen((const char*)Query_cmd), ack->expect.ack_wifiMqtt, timeoutS);
+	} else if (type == Set) { // Set
+		unsigned char Set_cmd[200] = { 0 };
+		if (!data) {
+			data = "";
+			CZ_ERR("data is NULL\r\n");
+		}
+		sprintf((char*)Set_cmd, "AT+MQTT=%d,%s\r\n", key, data);
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Set_cmd, strlen((const char*)Set_cmd), ack->expect.ack_OK, timeoutS);
+	} else if (type == Excution) { // Excution
+		unsigned char Excution_cmd[] = "AT+MQTT";
+		// CZ_LOG("[%d] %s\r\n", strlen((const char*)Set_cmd), Set_cmd);
+		ret = atcmd_send(Excution_cmd, strlen((const char*)Excution_cmd), ack->expect.ack_OK, timeoutS);
+	}
+	//CZ_RAW("%d\r\n", ret);
+	return ret;
+}
+
+
 static AT_t g_AT_t = {
 	// 基础指令
 	.Basic.at = test_at,
@@ -1438,7 +1471,7 @@ static AT_t g_AT_t = {
 	.Wifi.TcpIp.at_wDns = wifi_dns,
 
 	// WIFI MQTT指令
-	.Wifi.Mqtt.at_mqtt = NULL,
+	.Wifi.Mqtt.at_mqtt = wifi_mqtt,
 	.Wifi.Mqtt.at_mqttVer = NULL,
 	.Wifi.Mqtt.at_mqttBuf = NULL,
 	.Wifi.Mqtt.at_mqttKeepAlive = NULL,

@@ -12,6 +12,7 @@
 
 #include "cz_log.h"
 #include "delay.h"
+#include "gpio.h"
 #include "cmsis_os2.h"
 #include "cz_sysInfo.h"
 
