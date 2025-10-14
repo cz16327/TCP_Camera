@@ -88,6 +88,13 @@ const osThreadAttr_t adcTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
+/* Definitions for camTask */
+osThreadId_t camTaskHandle;
+const osThreadAttr_t camTask_attributes = {
+  .name = "camTask",
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityNormal6,
+};
 /* Definitions for atAck_semaphores */
 osSemaphoreId_t atAck_semaphoresHandle;
 const osSemaphoreAttr_t atAck_semaphores_attributes = {
@@ -148,6 +155,7 @@ void InitTask(void *argument);
 void SDcardTask(void *argument);
 void LiveTask(void *argument);
 void AdcTask(void *argument);
+void CamTask(void *argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -210,6 +218,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of adcTask */
   adcTaskHandle = osThreadNew(AdcTask, NULL, &adcTask_attributes);
 
+  /* creation of camTask */
+  camTaskHandle = osThreadNew(CamTask, NULL, &camTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 			  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -230,7 +241,7 @@ void MX_FREERTOS_Init(void) {
 void InitTask(void *argument)
 {
   /* init code for USB_DEVICE */
-//   MX_USB_DEVICE_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN InitTask */
 		/* Infinite loop */
 	for (;;) {
@@ -305,11 +316,6 @@ void LiveTask(void *argument)
 	// unsigned char data[30] = {0};
 	// unsigned char get_data[30] = {0};
 	IWDG_Feed();
-	const unsigned char start_cmd = 0x11;
-	const unsigned char stop_cmd = 0x22;
-	unsigned char rx_start = 0;
-	unsigned char rx_stop = 0;
-	unsigned int cnt = 0;
 	/* Infinite loop */
 	for (;;) {
 		// i++;
@@ -320,21 +326,6 @@ void LiveTask(void *argument)
 		// CZ_RAW("%s [%d %d]\r\n", get_data, ii, iii);
 		IWDG_Feed();
 		LED_TOGGLE;
-		if (cnt == 10) {
-			CZ_LOG("start %d\r\n", spi_TxRx(&hspi1, &start_cmd, 1, &rx_start, 0, 1000));
-			if (rx_start == start_cmd) {
-				CZ_LOG("start OK\r\n");
-				rx_start = 0;
-			}
-		} else if (cnt >= 20) {
-			CZ_LOG("stop %d\r\n", spi_TxRx(&hspi1, &stop_cmd, 1, &rx_stop, 0, 1000));
-			if (rx_stop == stop_cmd) {
-				CZ_LOG("stop OK\r\n");
-				rx_stop = 0;
-			}
-			cnt = 0;
-		}
-		cnt++;
 		osDelay(500);
 	}
   /* USER CODE END LiveTask */
@@ -358,6 +349,52 @@ void AdcTask(void *argument)
 		osDelay(1);
 	}
   /* USER CODE END AdcTask */
+}
+
+/* USER CODE BEGIN Header_CamTask */
+/**
+* @brief Function implementing the camTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_CamTask */
+void CamTask(void *argument)
+{
+  /* USER CODE BEGIN CamTask */
+	const unsigned char start_cmd = 0x11;
+	const unsigned char stop_cmd = 0x22;
+	unsigned char rx_start = 0;
+	unsigned char rx_stop = 0;
+	unsigned int cnt = 0;
+  /* Infinite loop */
+	for(;;)
+	{
+		if (cnt == 10) {
+			CZ_LOG("start %d\r\n", spi_TxRx(&hspi1, &start_cmd, 1, &rx_start, 1, 1000));
+			CZ_LOG("%02X\r\n", rx_start);
+			if (rx_start == start_cmd) {
+				CZ_LOG("start OK\r\n");
+				rx_start = 0;
+			} else {
+				CZ_ERR("start Wrong\r\n");
+			}
+			rx_start = 0;
+		} else if (cnt >= 20) {
+			CZ_LOG("stop %d\r\n", spi_TxRx(&hspi1, &stop_cmd, 1, &rx_stop, 1, 1000));
+			CZ_LOG("%02X\r\n", rx_stop);
+			if (rx_stop == stop_cmd) {
+				CZ_LOG("stop OK\r\n");
+				rx_stop = 0;
+			} else {
+				CZ_ERR("stop Wrong\r\n");
+			}
+			rx_stop = 0;
+			cnt = 0;
+		}
+		cnt++;
+		osDelay(500);
+	}
+  /* USER CODE END CamTask */
 }
 
 /* Private application code --------------------------------------------------*/

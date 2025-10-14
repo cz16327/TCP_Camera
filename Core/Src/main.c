@@ -213,7 +213,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   if (htim->Instance == TIM1)
   {
     HAL_IncTick();
-	timebase_irq_callback();
   }
   /* USER CODE BEGIN Callback 1 */
 	if (htim->Instance == TIM2) {

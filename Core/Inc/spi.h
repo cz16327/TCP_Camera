@@ -42,6 +42,7 @@ void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 Ret_Status_e spi_TxRx(SPI_HandleTypeDef *hspi, const unsigned char* txdata, unsigned int txlen, unsigned char* rxdata, unsigned int rxlen, unsigned int timeout);
+Ret_Status_e spi_Rx(SPI_HandleTypeDef *hspi, unsigned char* rxdata, unsigned int len, unsigned int timeout);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
